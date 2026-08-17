@@ -1,0 +1,8 @@
+node_modules
+dist
+dev-dist
+.vercel
+.DS_Store
+scripts/_regarde.mjs
+.env*.local
+captures

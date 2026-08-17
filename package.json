@@ -1,0 +1,42 @@
+{
+  "name": "iro-tubes",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "oxlint",
+    "icons": "node scripts/generer-icones.mjs",
+    "niveaux": "node --max-old-space-size=4096 scripts/generer-niveaux.mjs",
+    "migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
+    "local": "node scripts/serveur-local.mjs",
+    "test-classement": "node scripts/test-classement.mjs",
+    "test-logique": "node scripts/test-logique.mjs",
+    "test-solveur": "node scripts/test-solveur.mjs",
+    "test-niveaux": "node scripts/test-niveaux.mjs",
+    "test-parcours": "node scripts/test-parcours.mjs",
+    "test-bout-en-bout": "node scripts/test-bout-en-bout.mjs",
+    "test": "npm run test-logique && npm run test-solveur && npm run test-niveaux && npm run test-classement && npm run build && npm run test-bout-en-bout",
+    "verifie": "node scripts/verifie-mobile.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.5",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "oxlint": "^1.75.0",
+    "playwright": "^1.62.1",
+    "sharp": "^0.35.3",
+    "vite": "^8.2.0",
+    "vite-plugin-pwa": "^1.3.0"
+  }
+}

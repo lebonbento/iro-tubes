@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="IRO">
+  <rect width="512" height="512" rx="112" fill="#0b0f14"/>
+  <g>
+    <rect x="104" y="104" width="88" height="304" rx="44" fill="#ffffff" opacity=".08"/>
+    <rect x="212" y="104" width="88" height="304" rx="44" fill="#ffffff" opacity=".08"/>
+    <rect x="320" y="104" width="88" height="304" rx="44" fill="#ffffff" opacity=".08"/>
+    <path d="M104 300h88v64a44 44 0 0 1-44 44 44 44 0 0 1-44-44z" fill="#f43f5e"/>
+    <path d="M104 212h88v88h-88z" fill="#22d3ee"/>
+    <path d="M212 256h88v108a44 44 0 0 1-44 44 44 44 0 0 1-44-44z" fill="#22d3ee"/>
+    <path d="M212 168h88v88h-88z" fill="#eab308"/>
+    <path d="M320 344h88v20a44 44 0 0 1-44 44 44 44 0 0 1-44-44z" fill="#eab308"/>
+    <path d="M320 256h88v88h-88z" fill="#f43f5e"/>
+  </g>
+</svg>
