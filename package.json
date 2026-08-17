@@ -24,7 +24,9 @@
     "design": "node scripts/design-systeme.mjs",
     "design-apercu": "node scripts/apercu-design.mjs",
     "directions": "node scripts/directions.mjs",
-    "directions-apercu": "node scripts/apercu-directions.mjs"
+    "directions-apercu": "node scripts/apercu-directions.mjs",
+    "servir-directions": "node scripts/servir-directions.mjs",
+    "stop-directions": "lsof -ti :4401 -ti :4402 -ti :4403 | xargs kill 2>/dev/null || true"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

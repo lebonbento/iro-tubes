@@ -87,6 +87,11 @@ function ecran(d) {
   return `<!-- @dsCard group="Directions artistiques" -->
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><title>${d.nom}</title>
+<!-- SANS cette ligne, un téléphone rend la page sur 980 px de large : la règle
+     @media ne s'applique pas et on regarde une maquette miniature au lieu de
+     l'écran de jeu. C'est précisément ce qu'on veut juger ici. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="${d.themeColor}">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -116,6 +121,27 @@ function ecran(d) {
   }
   .plateau { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: ${UNITE * 0.7}px; }
   .rangee { display: flex; gap: 16px; align-items: flex-end; }
+
+  /* Le sélecteur pour sauter d'une direction à l'autre sans retaper l'adresse. */
+  .saut { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 9;
+    display: flex; gap: 2px; padding: 3px; border-radius: 999px;
+    background: rgba(20,20,24,.86); backdrop-filter: blur(10px);
+    box-shadow: 0 6px 22px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.1); }
+  .saut a { font: 500 .72rem/1 ui-sans-serif, system-ui, sans-serif; color: #b9b9c4;
+    text-decoration: none; padding: 8px 14px; border-radius: 999px; }
+  .saut a.ici { background: #e9e9ec; color: #17181c; }
+
+  /* Sur téléphone : plus de fiche, l'écran de jeu prend tout. C'est là qu'on
+     juge vraiment une direction — dans la main, pas dans une maquette. */
+  @media (max-width: 900px) {
+    body { padding: 0; display: block; background: #000; }
+    .fiche { display: none; }
+    /* Le sélecteur flotte au-dessus : on lui réserve sa place, sinon il
+       recouvre la barre de boutons — justement ce qu'on vient juger. */
+    .tel { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 56px); }
+    .saut { bottom: calc(env(safe-area-inset-bottom) + 10px); }
+  }
   ${d.css}
 </style></head><body>
 <div class="fiche">
@@ -135,6 +161,17 @@ function ecran(d) {
   <div class="plateau">${rangees}</div>
   ${d.barre}
 </div>
+<nav class="saut" id="saut"></nav>
+<script>
+  // Les trois directions tournent sur trois ports du même hôte : on reconstruit
+  // les liens depuis l'adresse courante pour que ça marche aussi depuis le
+  // téléphone, où l'hôte n'est pas « localhost ».
+  var LIENS = [['Laboratoire', 4401], ['Washi', 4402], ['Laque', 4403]]
+  document.getElementById('saut').innerHTML = LIENS.map(function (l) {
+    var ici = String(location.port) === String(l[1]) ? ' class="ici"' : ''
+    return '<a' + ici + ' href="' + location.protocol + '//' + location.hostname + ':' + l[1] + '/">' + l[0] + '</a>'
+  }).join('')
+</script>
 </body></html>
 `
 }
@@ -144,6 +181,7 @@ const laboratoire = {
   nom: 'Laboratoire',
   quoi: 'Instrument de précision',
   fichier: 'laboratoire.html',
+  themeColor: '#0d1117',
   // Désaturation FRANCHE : à 0,82 les couleurs restaient des bonbons et la
   // promesse « ce sont des réactifs » était démentie par l'écran.
   teinte: { sat: 0.48, lum: -0.07, ecart: 0.12, satHaut: 0.85 },
@@ -218,6 +256,7 @@ const washi = {
   nom: 'Washi',
   quoi: 'Papier et encre',
   fichier: 'washi.html',
+  themeColor: '#ece5d7',
   teinte: { sat: 0.52, lum: 0.1, ecart: 0.07, satHaut: 0.85 },
   texte: `
     <p>La rupture franche : <b>on quitte le noir</b>. Fond de papier japonais chaud, grain
@@ -289,6 +328,7 @@ const laque = {
   nom: 'Laque',
   quoi: 'Boîte à bijoux',
   fichier: 'laque.html',
+  themeColor: '#08070a',
   // Une gemme est PROFONDE : on assombrit et on retient la saturation, sinon on
   // obtient du bonbon verni, pas de la pierre taillée.
   teinte: { sat: 0.86, lum: -0.11, ecart: 0.2, satHaut: 0.6 },
