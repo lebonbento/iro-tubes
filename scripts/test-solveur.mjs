@@ -5,7 +5,7 @@
 // recalcule la distance exacte sur des petits plateaux et on compare.
 
 import { gagne, coupsPossibles, verser, cle } from '../src/logique.js'
-import { chercherUneSolution, chercherSolutionOptimale, indice, INCONNU } from '../src/solveur.js'
+import { chercherUneSolution, chercherSolutionOptimale, chercherParFaisceau, indice, INCONNU } from '../src/solveur.js'
 import { graine } from '../src/generateur.js'
 
 let ok = 0
@@ -153,6 +153,38 @@ gros.push([], [])
 const serre = chercherSolutionOptimale(gros, H, 500)
 verifie('budget minuscule -> INCONNU, pas une fausse réponse',
   serre === INCONNU || Array.isArray(serre))
+
+// --- la recherche en faisceau ---------------------------------------------
+// Elle sert d'objectif sur les grands plateaux : elle doit rendre de VRAIES
+// solutions, et jamais une plus courte que le minimum (ce serait impossible).
+let faisceauTestes = 0
+let faisceauFaux = 0
+let faisceauSousMin = 0
+let faisceauEcart = 0
+const rand3 = graine(555)
+for (let essai = 0; essai < 60; essai++) {
+  const couleurs = 3 + Math.floor(rand3() * 2)
+  const unites = []
+  for (let c = 0; c < couleurs; c++) for (let k = 0; k < H; k++) unites.push(c)
+  for (let i = unites.length - 1; i > 0; i--) {
+    const j = Math.floor(rand3() * (i + 1))
+    ;[unites[i], unites[j]] = [unites[j], unites[i]]
+  }
+  const etat = []
+  for (let t = 0; t < couleurs; t++) etat.push(unites.slice(t * H, (t + 1) * H))
+  etat.push([], [])
+  const exact = distanceExacte(etat, H)
+  if (exact === null || exact === Infinity) continue
+  const f = chercherParFaisceau(etat, H, 300)
+  if (!Array.isArray(f) || !rejoue(etat, f, H)) { faisceauFaux++; continue }
+  faisceauTestes++
+  if (f.length < exact) faisceauSousMin++
+  faisceauEcart += f.length - exact
+}
+verifie(`les ${faisceauTestes} solutions du faisceau sont valides`, faisceauFaux === 0)
+verifie('le faisceau ne descend JAMAIS sous le minimum réel', faisceauSousMin === 0)
+verifie(`le faisceau reste proche du minimum (+${(faisceauEcart / faisceauTestes).toFixed(2)})`,
+  faisceauEcart / faisceauTestes < 1)
 
 console.log(`\n  solveur : ${ok} vérifications passées`)
 console.log(`  arbitre indépendant : ${compares} plateaux comparés, ${insolubles} insolubles reconnus`)

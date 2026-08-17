@@ -30,10 +30,14 @@ for (const n of niveaux) {
     n.hauteur === attendu.hauteur && n.couleurs === attendu.couleurs && n.vides === attendu.vides)
 
   verifie(`${etiquette} : nombre de tubes`, n.etat.length === n.couleurs + n.vides)
-  verifie(`${etiquette} : tubes de couleur pleins`,
-    n.etat.slice(0, n.couleurs).every((t) => t.length === n.hauteur))
-  verifie(`${etiquette} : tubes libres vides`,
-    n.etat.slice(n.couleurs).every((t) => t.length === 0))
+  // Les niveaux fabriqués en marche arrière ont, eux, des tubes partiellement
+  // remplis : c'est précisément ce que le tirage au hasard ne sait pas produire.
+  if (n.methode !== 'arriere') {
+    verifie(`${etiquette} : tubes de couleur pleins`,
+      n.etat.slice(0, n.couleurs).every((t) => t.length === n.hauteur))
+    verifie(`${etiquette} : tubes libres vides`,
+      n.etat.slice(n.couleurs).every((t) => t.length === 0))
+  }
 
   const compte = new Map()
   for (const tube of n.etat) for (const c of tube) compte.set(c, (compte.get(c) ?? 0) + 1)
@@ -62,10 +66,30 @@ for (const n of niveaux) {
   precedent = n.par
 }
 
-verifie('la difficulté monte globalement', croissances > niveaux.length * 0.5)
+// La difficulté monte jusqu'au niveau 200 ; au-delà c'est une rotation de
+// formats, donc le « par » oscille exprès. On contrôle donc la MOYENNE par
+// tranche, pas la monotonie coup par coup.
+const moyenne = (a, b) => {
+  const t = niveaux.filter((n) => n.numero >= a && n.numero <= b)
+  return t.length ? t.reduce((s, n) => s + n.par, 0) / t.length : 0
+}
+const tranches = [[1, 20], [21, 60], [61, 120], [121, 200]].filter(([a]) => a <= niveaux.length)
+for (let i = 1; i < tranches.length; i++) {
+  const avant = moyenne(...tranches[i - 1])
+  const apres = moyenne(...tranches[i])
+  verifie(`la difficulté monte de la tranche ${tranches[i - 1].join('-')} (${avant.toFixed(0)}) `
+    + `à ${tranches[i].join('-')} (${apres.toFixed(0)})`, apres > avant)
+}
 
+// Le minimum n'est prouvé que là où c'est calculable (jusqu'à 5 unités par
+// tube). Au-delà, l'objectif vient du faisceau et l'écran l'annonce « connu ».
+const petits = niveaux.filter((n) => n.hauteur <= 5)
+const prouvesPetits = petits.filter((n) => n.parOptimal).length
+verifie(`minimum prouvé sur les plateaux jusqu'à 5 unités (${prouvesPetits}/${petits.length})`,
+  prouvesPetits >= petits.length * 0.9)
 const prouves = niveaux.filter((n) => n.parOptimal).length
-verifie('la grande majorité des « par » sont prouvés minimaux', prouves >= niveaux.length * 0.9)
+verifie('aucun grand plateau ne se prétend au minimum',
+  niveaux.every((n) => !n.parOptimal || n.hauteur <= 5))
 
 // Déterminisme : régénérer le niveau 1 et le niveau 25 doit redonner le même
 // plateau, sinon la promesse « le niveau 42 est le même pour tous » est fausse.

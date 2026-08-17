@@ -298,24 +298,15 @@ export default function App() {
       {ecran === 'niveaux' && (
         <Voile large>
           <h2>Les niveaux</h2>
-          <div className="iro-grille-niveaux">
-            {NIVEAUX.map((n) => {
-              const fait = progression.termines[n.numero]
-              const ouvert = n.numero <= debloque
-              return (
-                <button
-                  key={n.numero}
-                  type="button"
-                  disabled={!ouvert}
-                  className={`iro-pastille ${fait ? 'est-fait' : ''} ${n.numero === partie.numero ? 'est-courant' : ''}`}
-                  onClick={() => allerAuNiveau(n.numero)}
-                >
-                  <b>{n.numero}</b>
-                  <i>{fait ? `${fait.coups}` : ouvert ? '' : '🔒'}</i>
-                </button>
-              )
-            })}
-          </div>
+          {/* Une grille de 500 boutons est illisible : on découpe en chapitres
+              de vingt, et on ouvre d'emblée celui où le joueur en est. */}
+          <ChoixNiveaux
+            niveaux={NIVEAUX}
+            termines={progression.termines}
+            debloque={debloque}
+            courant={partie.numero}
+            aller={allerAuNiveau}
+          />
           <h3>Partie libre</h3>
           <p className="iro-note">Un plateau tiré au hasard, vérifié soluble avant d’être servi. Hors classement.</p>
           <div className="iro-choix">
@@ -380,6 +371,64 @@ export default function App() {
         </Voile>
       )}
     </div>
+  )
+}
+
+const TAILLE_CHAPITRE = 20
+
+function ChoixNiveaux({ niveaux, termines, debloque, courant, aller }) {
+  const chapitres = Math.ceil(niveaux.length / TAILLE_CHAPITRE)
+  const [chapitre, setChapitre] = useState(
+    () => Math.floor(((courant ?? debloque) - 1) / TAILLE_CHAPITRE),
+  )
+  const debut = chapitre * TAILLE_CHAPITRE
+  const tranche = niveaux.slice(debut, debut + TAILLE_CHAPITRE)
+
+  return (
+    <>
+      <div className="iro-chapitres">
+        {Array.from({ length: chapitres }, (_, c) => {
+          const premier = c * TAILLE_CHAPITRE + 1
+          const dernier = Math.min(niveaux.length, premier + TAILLE_CHAPITRE - 1)
+          const faits = niveaux
+            .slice(c * TAILLE_CHAPITRE, c * TAILLE_CHAPITRE + TAILLE_CHAPITRE)
+            .filter((n) => termines[n.numero]).length
+          return (
+            <button
+              key={c}
+              type="button"
+              disabled={premier > debloque}
+              className={`iro-chapitre ${c === chapitre ? 'est-ouvert' : ''} ${faits === dernier - premier + 1 ? 'est-fait' : ''}`}
+              onClick={() => setChapitre(c)}
+            >
+              {premier}–{dernier}
+            </button>
+          )
+        })}
+      </div>
+      <div className="iro-grille-niveaux">
+        {tranche.map((n) => {
+          const fait = termines[n.numero]
+          const ouvert = n.numero <= debloque
+          return (
+            <button
+              key={n.numero}
+              type="button"
+              disabled={!ouvert}
+              className={`iro-pastille ${fait ? 'est-fait' : ''} ${n.numero === courant ? 'est-courant' : ''}`}
+              onClick={() => aller(n.numero)}
+            >
+              <b>{n.numero}</b>
+              <i>{fait ? `${fait.coups}` : ouvert ? '' : '·'}</i>
+            </button>
+          )
+        })}
+      </div>
+      <p className="iro-note">
+        {Object.keys(termines).length} niveau{Object.keys(termines).length > 1 ? 'x' : ''} terminé
+        {Object.keys(termines).length > 1 ? 's' : ''} sur {niveaux.length}.
+      </p>
+    </>
   )
 }
 

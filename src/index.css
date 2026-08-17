@@ -423,6 +423,28 @@ button { touch-action: manipulation; }
   color: var(--accent);
 }
 
+.iro-chapitres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.8rem 0 0.9rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--trait);
+}
+.iro-chapitre {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: none;
+  color: var(--encre-douce);
+  font-family: var(--serif);
+  font-size: 0.74rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.iro-chapitre:disabled { opacity: 0.28; cursor: default; }
+.iro-chapitre.est-fait { color: var(--accent); border-color: rgba(201, 162, 39, 0.35); }
+.iro-chapitre.est-ouvert { border-color: var(--accent); color: var(--encre); }
+
 .iro-grille-niveaux {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(3.1rem, 1fr));

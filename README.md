@@ -42,9 +42,24 @@ voisines, ce qui avait donné « deux rouges » séparés de ΔE 7 seulement.
 
 **La difficulté ne monte pas comme on croit.** Avec des tubes tous pleins au
 départ, ne laisser qu'un seul tube libre rend le plateau insoluble dans 120 cas
-sur 120 : le « mode difficile » des autres jeux suppose des tubes partiellement
-remplis, ce qui est un autre générateur. Ici la difficulté monte par le nombre de
-couleurs (3 → 12) puis par la hauteur des tubes (4 → 5).
+sur 120. Deux axes seulement fonctionnent : le nombre de couleurs (3 → 12,
+plafonné par la palette) puis la **hauteur des tubes** — mesuré, 12 couleurs
+donnent ~50 coups à 5 unités, ~61 à 6, ~71 à 7. Au-delà, c'est l'écran d'un
+iPhone SE qui plafonne.
+
+**Deux générateurs, pas un.** Le tirage au hasard produit les plateaux les plus
+emmêlés, mais il ne sait pas fabriquer les formats à un seul tube libre. Pour
+ceux-là on part de l'état RÉSOLU et on joue des coups à l'envers : le plateau est
+alors soluble par construction. ⚠️ Une marche arrière *au hasard* sature autour
+de 26 coups — l'état résolu est un attracteur ; il faut choisir à chaque pas le
+coup qui éparpille le plus.
+
+**Trois moteurs de recherche, pour trois usages.** IDA* prouve le minimum mais
+coûte des dizaines de secondes au-delà de 5 unités ; la descente en profondeur
+répond en millisecondes mais rend des solutions très lâches (90 coups pour 71) ;
+la **recherche en faisceau** tombe à +0,20 coup du minimum prouvé en 84 ms. C'est
+elle qui donne l'objectif des grands plateaux — annoncé « connu » et non
+« minimum », parce qu'il ne l'est pas.
 
 ## Commandes
 
