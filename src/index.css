@@ -124,7 +124,7 @@ button { touch-action: manipulation; }
   position: relative;
   width: 100%;
   flex: none;
-  transition: transform 200ms cubic-bezier(0.34, 1.42, 0.64, 1);
+  transition: transform 130ms cubic-bezier(0.34, 1.42, 0.64, 1);
 }
 .iro-unite::after {
   content: '';
@@ -181,7 +181,8 @@ button { touch-action: manipulation; }
 
 .iro-envol {
   position: fixed;
-  transition: transform 260ms cubic-bezier(0.36, 0.05, 0.28, 1);
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.36, 0.05, 0.28, 1);
   will-change: transform;
   filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.55));
 }
@@ -190,7 +191,7 @@ button { touch-action: manipulation; }
 .iro-trace {
   stroke-dasharray: 1;
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.22));
-  animation: iro-couler 190ms cubic-bezier(0.3, 0.8, 0.4, 1) forwards;
+  animation: iro-couler 160ms cubic-bezier(0.3, 0.8, 0.4, 1) forwards;
 }
 @keyframes iro-couler {
   from { stroke-dashoffset: 1; }

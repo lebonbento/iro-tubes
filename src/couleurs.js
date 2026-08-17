@@ -5,20 +5,68 @@
 // « motifs » grave donc une forme distincte dans chaque unité. Ce n'est pas une
 // option cosmétique, c'est la condition pour que le jeu soit jouable par tous.
 
-export const PALETTE = [
-  { nom: 'rouge', fond: '#f04747', clair: '#ff7b7b', sombre: '#b91c1c' },
-  { nom: 'orange', fond: '#f97316', clair: '#fdba74', sombre: '#c2410c' },
-  { nom: 'jaune', fond: '#eab308', clair: '#fde047', sombre: '#a16207' },
-  { nom: 'lime', fond: '#84cc16', clair: '#bef264', sombre: '#4d7c0f' },
-  { nom: 'vert', fond: '#22c55e', clair: '#86efac', sombre: '#15803d' },
-  { nom: 'turquoise', fond: '#14b8a6', clair: '#5eead4', sombre: '#0f766e' },
-  { nom: 'cyan', fond: '#22d3ee', clair: '#a5f3fc', sombre: '#0e7490' },
-  { nom: 'bleu', fond: '#3b82f6', clair: '#93c5fd', sombre: '#1d4ed8' },
-  { nom: 'violet', fond: '#8b5cf6', clair: '#c4b5fd', sombre: '#6d28d9' },
-  { nom: 'fuchsia', fond: '#d946ef', clair: '#f0abfc', sombre: '#a21caf' },
-  { nom: 'rose', fond: '#f43f5e', clair: '#fda4af', sombre: '#be123c' },
-  { nom: 'ivoire', fond: '#e7e5e4', clair: '#ffffff', sombre: '#a8a29e' },
+// Les douze teintes, DANS L'ORDRE DE LA ROUE.
+//
+// ⚠️ La roue boucle : la première et la dernière sont voisines. C'est ce qui
+// avait donné « deux rouges » — un rouge en tête et un rose en queue, séparés
+// par ΔE 7 seulement, c'est-à-dire à peine perceptible. Les valeurs ci-dessous
+// sont issues d'une recherche qui maximise l'écart perceptuel MINIMAL entre
+// deux teintes quelconques, en imposant en plus 20° d'écart de teinte pour
+// qu'aucune paire n'appartienne visiblement à la même famille.
+//
+// `npm run test-palette` remesure tout et refuse en dessous de ΔE 22.
+// Ne pas retoucher une valeur sans relancer ce contrôle.
+const TEINTES = [
+  ['rouge', '#ed4c12'],
+  ['orange', '#f0a433'],
+  ['jaune', '#e5e520'],
+  ['vert', '#36c936'],
+  ['turquoise', '#75f5db'],
+  ['cyan', '#12c1ed'],
+  ['bleu', '#2479db'],
+  ['indigo', '#2b2be8'],
+  ['lavande', '#b99fef'],
+  ['magenta', '#d012ed'],
+  ['framboise', '#ed126a'],
+  ['dragée', '#e7a6ab'],
 ]
+
+// Le dégradé de chaque unité se déduit du fond : une seule valeur à régler par
+// couleur, et aucune chance qu'un clair et un sombre se contredisent.
+const versHsl = (hex) => {
+  const [r, v, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+  const max = Math.max(r, v, b)
+  const min = Math.min(r, v, b)
+  const l = (max + min) / 2
+  const d = max - min
+  if (d === 0) return [0, 0, l]
+  const s = d / (1 - Math.abs(2 * l - 1))
+  let h
+  if (max === r) h = ((v - b) / d) % 6
+  else if (max === v) h = (b - r) / d + 2
+  else h = (r - v) / d + 4
+  return [(h * 60 + 360) % 360, s, l]
+}
+
+const versHex = (h, s, l) => {
+  const a = s * Math.min(l, 1 - l)
+  const f = (n) => {
+    const k = (n + h / 30) % 12
+    const v = l - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)))
+    return Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')
+  }
+  return `#${f(0)}${f(8)}${f(4)}`
+}
+
+export const PALETTE = TEINTES.map(([nom, fond]) => {
+  const [h, s, l] = versHsl(fond)
+  return {
+    nom,
+    fond,
+    clair: versHex(h, Math.min(1, s * 1.02), Math.min(0.93, l + 0.17)),
+    sombre: versHex(h, s, Math.max(0.16, l - 0.19)),
+  }
+})
 
 /**
  * Une forme par couleur, dessinée dans un carré de 100×100 centré.

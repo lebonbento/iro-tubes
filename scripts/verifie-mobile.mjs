@@ -118,7 +118,7 @@ for (const [nom, appareil] of APPAREILS) {
   await page.waitForTimeout(200)
   for (let i = 1; i < tubes; i++) {
     await page.locator('.iro-tube').nth(i).click()
-    await page.waitForTimeout(1300)
+    await page.waitForTimeout(700)
     if (await page.locator('.iro-unite').count() === avant) break
   }
   verifie('réseau coupé : on peut jouer un coup', await page.locator('.iro-titre span').innerText() !== '0 coup')

@@ -57,7 +57,7 @@ for (const [de, vers] of solution) {
   await tubes.nth(de).click()
   await page.waitForTimeout(90)
   await tubes.nth(vers).click()
-  await page.waitForTimeout(1150)
+  await page.waitForTimeout(620)
 }
 await page.waitForTimeout(1400)
 

@@ -42,7 +42,7 @@ for (const [de, vers] of solution) {
   await page.waitForTimeout(90)
   await tubes.nth(vers).click()
   // monte + versement + retour, avec de la marge
-  await page.waitForTimeout(1150)
+  await page.waitForTimeout(620)
 }
 
 await page.waitForTimeout(900)

@@ -3,26 +3,28 @@ import Tube from './Tube.jsx'
 import { coupLegal, quantiteVersee, sommet } from '../logique.js'
 import { couleur } from '../couleurs.js'
 
-const MONTEE = 260
-const RETOUR = 240
-// Un versement d'une seule unité passait en 220 ms : l'œil n'avait pas le temps
-// de voir ce qui bougeait. Le geste doit rester lisible même sur un coup court.
-const dureeVersement = (n) => Math.max(330, 155 * n)
+const MONTEE = 150
+const RETOUR = 150
+const dureeVersement = (n) => Math.max(150, 65 * n)
 const COL = 0.22 // le goulot, en fraction d'unité, au-dessus du liquide à ras bord
 
 /**
  * Le plateau, et surtout le VERSEMENT.
  *
- * L'animation n'est pas de la décoration : sans elle on ne voit pas ce qui part
- * ni où ça arrive, et le jeu devient un tableur coloré. Elle se joue en trois
- * temps — le tube monte et s'incline au-dessus de sa cible, le liquide coule,
- * le tube revient. L'état du jeu n'est validé qu'au tout dernier temps, ce qui
- * garantit qu'on ne peut pas jouer un coup « à travers » l'animation.
+ * L'animation n'est pas de la décoration : sans elle on ne voit ni ce qui part
+ * ni où ça arrive. Mais elle ne doit pas faire attendre. Deux règles :
+ *
+ *   — le coup est VALIDÉ dès que le liquide est arrivé, pas quand le tube a fini
+ *     de revenir. Le joueur récupère la main ~200 ms plus tôt, et sur un niveau
+ *     à 50 coups ça fait dix secondes d'attente en moins ;
+ *   — le contenu affiché pendant le vol est figé au départ du coup, jamais
+ *     recalculé depuis l'état : sinon la validation anticipée ferait sauter
+ *     l'image en plein vol.
  */
-export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, indiceCoup, onSelection }) {
+export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, indiceCoup }) {
   const cadre = useRef(null)
   const tubes = useRef([])
-  const [taille, setTaille] = useState({ largeur: 48, unite: 42, ecart: 10, colonnes: 6 })
+  const [taille, setTaille] = useState({ largeur: 48, unite: 42, ecart: 10 })
   const [selection, setSelection] = useState(null)
   const [anim, setAnim] = useState(null)
   const [enVol, setEnVol] = useState(false)
@@ -49,7 +51,7 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
       const hauteurDispo = (H - (lignes + 1) * ecart) / lignes
       const parHauteur = hauteurDispo / (hauteur + COL + 0.62) / 0.88
       const largeur = Math.max(18, Math.min(largeurDispo, parHauteur, 76))
-      setTaille({ largeur, unite: largeur * 0.88, ecart, colonnes })
+      setTaille({ largeur, unite: largeur * 0.88, ecart })
     }
     ajuster()
     const ro = new ResizeObserver(ajuster)
@@ -66,15 +68,14 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
     }
     if (anim.phase === 'verse') {
       const t = setTimeout(() => {
+        // Le coup est acquis ici : la main est rendue pendant que le tube rentre.
+        jouer(anim.de, anim.vers)
         setEnVol(false)
-        setAnim((a) => a && { ...a, phase: 'retour' })
+        setAnim((a) => a && { ...a, phase: 'retour', fini: true })
       }, dureeVersement(anim.n))
       return () => clearTimeout(t)
     }
-    const t = setTimeout(() => {
-      jouer(anim.de, anim.vers)
-      setAnim(null)
-    }, RETOUR)
+    const t = setTimeout(() => setAnim(null), RETOUR)
     return () => clearTimeout(t)
   }, [anim, jouer])
 
@@ -85,9 +86,8 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
     return () => { cancelAnimationFrame(id1); cancelAnimationFrame(id2) }
   }, [anim])
 
-  // Une partie qui change (niveau suivant, annulation, recommencer) coupe tout.
+  // Un changement de partie (niveau suivant, annulation, recommencer) coupe tout.
   useEffect(() => { setSelection(null) }, [etat])
-  useEffect(() => { onSelection?.(selection) }, [selection, onSelection])
 
   const demarrer = useCallback((de, vers) => {
     const n = quantiteVersee(etat, de, vers, hauteur)
@@ -97,11 +97,19 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
     if (!rDe || !rVers) { jouer(de, vers); return }
     setSelection(null)
     setEnVol(false)
-    setAnim({ de, vers, n, teinte: etat[de][etat[de].length - 1], phase: 'monte', rDe, rVers })
+    setAnim({
+      de, vers, n, phase: 'monte', rDe, rVers,
+      teinte: etat[de][etat[de].length - 1],
+      // Figé maintenant : l'état changera avant la fin de l'animation.
+      avant: etat[de],
+      apres: etat[de].slice(0, etat[de].length - n),
+      cible: etat[vers],
+    })
   }, [etat, hauteur, jouer])
 
   const toucher = (i) => {
-    if (anim || gele) return
+    if (gele) return
+    if (anim && !anim.fini) return // pendant le vol, on ne joue pas à travers
     if (selection === null) {
       if (etat[i].length > 0) setSelection(i)
       return
@@ -114,9 +122,9 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
   // --- géométrie du tube en vol --------------------------------------------
   //
   // On vise le GOULOT, pas le tube : c'est le goulot qui doit surplomber la
-  // cible. Le corps du tube suit derrière, et comme il est long et l'écran
-  // étroit, il faut ensuite le ramener de force dans l'écran — d'où le
-  // recadrage, puis le recalcul du goulot RÉEL d'où part le jet.
+  // cible. Le corps suit derrière, et comme il est long et l'écran étroit, il
+  // faut ensuite le ramener de force dans l'écran — d'où le recadrage, puis le
+  // recalcul du goulot RÉEL d'où part le jet.
   let vol = null
   if (anim) {
     const { rDe, rVers } = anim
@@ -133,7 +141,6 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
     const echelle = 0.78 // couché, le tube est large : il faut le reculer un peu
     const marge = taille.unite * 0.7
 
-    // Vecteur centre -> goulot une fois le tube réduit puis penché.
     const bras = {
       x: echelle * (h / 2) * Math.sin(rad),
       y: -echelle * (h / 2) * Math.cos(rad),
@@ -148,14 +155,13 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
     centreY = borne(centreY, demiH + 4, window.innerHeight - demiH - 4)
 
     const goulot = { x: centreX + bras.x, y: centreY + bras.y }
-    // La surface du liquide déjà présent dans le tube d'arrivée.
-    const surface = rVers.top + taille.unite * COL + (hauteur - etat[anim.vers].length) * taille.unite
+    const surface = rVers.top + taille.unite * COL + (hauteur - anim.cible.length) * taille.unite
 
     vol = {
       transform: `translate(${centreX - cx}px, ${centreY - cy}px) rotate(${angle}deg) scale(${echelle})`,
-      contenu: anim.phase === 'monte' ? etat[anim.de] : etat[anim.de].slice(0, etat[anim.de].length - anim.n),
-      // Le liquide part du goulot en arc jusqu'à la surface : un trait vertical
-      // se décrochait visiblement du tube dès que celui-ci était recadré.
+      contenu: anim.phase === 'monte' ? anim.avant : anim.apres,
+      // Le liquide part du goulot en arc : un trait vertical se décrochait
+      // visiblement du tube dès que celui-ci était recadré.
       jet: `M ${goulot.x} ${goulot.y} Q ${goulot.x + (destX - goulot.x) * 0.2} ${goulot.y + (surface - goulot.y) * 0.62} ${destX} ${surface}`,
     }
   }
@@ -166,9 +172,6 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
     <div ref={cadre} className="iro-cadre">
       {/* Une grille CSS collerait la dernière rangée incomplète à gauche.
           On découpe donc en rangées, chacune centrée sur elle-même. */}
-      {/* L'espace réservé au bloc soulevé se place ENTRE les rangées et au-dessus
-          de la première, pas en marge extérieure : sinon le bloc levé de la
-          rangée du bas vient chevaucher les tubes de celle du haut. */}
       <div
         className="iro-grille"
         style={{ gap: taille.ecart + taille.unite * 0.62, paddingTop: taille.unite * 0.62 }}
@@ -176,19 +179,18 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
         {rangees.map((rangee, r) => (
           <div className="iro-rangee" key={r} style={{ gap: taille.ecart }}>
             {rangee.map((i) => {
-              const contenu = etat[i]
               const enFuite = anim?.de === i
-              const arrive = anim?.vers === i
+              const arrive = anim?.vers === i && !anim.fini
               return (
                 <Tube
                   key={i}
                   refTube={(el) => { tubes.current[i] = el }}
-                  contenu={enFuite ? [] : contenu}
+                  contenu={enFuite ? [] : arrive ? anim.cible : etat[i]}
                   hauteur={hauteur}
                   largeur={taille.largeur}
                   unite={taille.unite}
                   carte={carte}
-                  vide={contenu.length === 0}
+                  vide={etat[i].length === 0}
                   selectionne={selection === i}
                   leve={selection === i ? bloc.taille : 0}
                   motifs={motifs}
@@ -212,6 +214,7 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
               width: anim.rDe.width,
               height: anim.rDe.height,
               transform: enVol ? vol.transform : 'translate(0px, 0px) rotate(0deg)',
+              transitionDuration: `${anim.phase === 'monte' ? MONTEE : RETOUR}ms`,
             }}
           >
             <Tube
@@ -234,6 +237,7 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
                 stroke={couleur(carte ? carte[anim.teinte] : anim.teinte).fond}
                 strokeWidth={taille.unite * 0.26}
                 strokeLinecap="round"
+                style={{ animationDuration: `${Math.min(160, dureeVersement(anim.n))}ms` }}
               />
             </svg>
           )}
