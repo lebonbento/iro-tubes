@@ -35,39 +35,21 @@ function Unite({ index, teinte, taille, largeur, arrondiBas, arrondiHaut, motifs
   )
 }
 
-/**
- * Un tube.
- *
- * `carte` traduit les couleurs du niveau (0, 1, 2…) en teintes de la palette,
- * pour que trois couleurs soient trois teintes ÉLOIGNÉES et non trois voisines.
- * `leve` est le nombre d'unités du sommet qui flottent au-dessus du goulot (le
- * bloc sélectionné), `ajout` celles qu'on est en train d'y verser : elles
- * poussent depuis une hauteur nulle, ce qui donne le remplissage.
- */
-export default function Tube({
-  contenu, hauteur, largeur, unite, carte, selectionne, leve = 0, ajout = null,
-  motifs, vide, onClick, refTube, illumine,
-}) {
+/** Le tube DESSINÉ. Sa largeur est celle du verre, pas celle de la zone touchée. */
+export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout = null, motifs }) {
   const teinte = (c) => (carte ? carte[c] : c)
   const hautLiquide = hauteur * unite
-  const col = unite * 0.22 // le col du tube, au-dessus du liquide à ras bord
+  const col = unite * 0.22
   const hautVerre = hautLiquide + col
   const saut = unite * 0.62
   const rayon = `${largeur * 0.13}px ${largeur * 0.13}px ${largeur * 0.44}px ${largeur * 0.44}px`
-
+  const marge = Math.max(1.5, largeur * 0.06)
   const teinteAjout = ajout ? couleur(teinte(ajout.teinte)) : null
 
   return (
-    <button
-      type="button"
-      ref={refTube}
-      onClick={onClick}
-      aria-label={vide ? 'Tube vide' : `Tube de ${contenu.length} unités`}
-      className={`iro-tube ${selectionne ? 'est-choisi' : ''} ${illumine ? 'est-montre' : ''}`}
-      style={{ width: largeur, height: hautVerre }}
-    >
-      <span className="iro-verre" style={{ height: hautVerre, borderRadius: rayon }} />
-      <span className="iro-liquide" style={{ height: hautLiquide, top: col }}>
+    <span className="iro-corps" style={{ width: largeur, height: hautVerre }}>
+      <span className="iro-verre" style={{ borderRadius: rayon }} />
+      <span className="iro-liquide" style={{ height: hautLiquide, top: col, left: marge, right: marge }}>
         {contenu.map((c, i) => (
           <Unite
             key={i}
@@ -96,7 +78,48 @@ export default function Tube({
           />
         )}
       </span>
-      <span className="iro-reflet" style={{ height: hautVerre, borderRadius: rayon }} />
+      <span className="iro-reflet" style={{ borderRadius: rayon }} />
+    </span>
+  )
+}
+
+/**
+ * Un tube jouable.
+ *
+ * 🔑 Le VERRE et la ZONE TOUCHÉE sont deux choses différentes. Le verre est
+ * dessiné petit ; le bouton, lui, occupe toute sa case. Réduire le dessin sans
+ * réduire la cible, c'est ce qui permet d'aérer le plateau sans qu'on rate le
+ * tube d'à côté avec le pouce — au niveau 60, un verre fait moins de 20 px de
+ * large, on ne peut pas viser ça.
+ *
+ * `carte` traduit les couleurs du niveau (0, 1, 2…) en teintes de la palette.
+ * `leve` est le bloc du sommet qui flotte au-dessus du goulot (la sélection),
+ * `ajout` celui qu'on est en train d'y verser.
+ */
+export default function Tube({
+  contenu, hauteur, largeur, cellule, unite, carte, selectionne, leve = 0, ajout = null,
+  motifs, vide, onClick, refTube, illumine,
+}) {
+  const hautVerre = hauteur * unite + unite * 0.22
+  return (
+    <button
+      type="button"
+      ref={refTube}
+      onClick={onClick}
+      aria-label={vide ? 'Tube vide' : `Tube de ${contenu.length} unités`}
+      className={`iro-tube ${selectionne ? 'est-choisi' : ''} ${illumine ? 'est-montre' : ''}`}
+      style={{ width: cellule ?? largeur, height: hautVerre }}
+    >
+      <Corps
+        contenu={contenu}
+        hauteur={hauteur}
+        largeur={largeur}
+        unite={unite}
+        carte={carte}
+        leve={leve}
+        ajout={ajout}
+        motifs={motifs}
+      />
     </button>
   )
 }

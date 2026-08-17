@@ -94,16 +94,22 @@ button { touch-action: manipulation; }
 
 .iro-tube {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
 }
 
+/* Le verre dessiné, centré dans une case plus large : c'est la case qui reçoit
+   le doigt, pas le verre. */
+.iro-corps { position: relative; display: block; flex: none; }
+
 .iro-verre {
   position: absolute;
-  top: 0; left: 0; right: 0;
+  inset: 0;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.04);
   border: 1.5px solid rgba(255, 255, 255, 0.15);
@@ -113,9 +119,6 @@ button { touch-action: manipulation; }
 
 .iro-liquide {
   position: absolute;
-  top: 0;
-  left: 2.5px;
-  right: 2.5px;
   display: flex;
   flex-direction: column-reverse;
 }
@@ -156,7 +159,7 @@ button { touch-action: manipulation; }
 
 .iro-reflet {
   position: absolute;
-  top: 0; left: 0; right: 0;
+  inset: 0;
   pointer-events: none;
   background: linear-gradient(105deg, rgba(255, 255, 255, 0.16) 0 16%, rgba(255, 255, 255, 0) 34% 100%);
 }

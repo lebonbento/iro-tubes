@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import Tube from './Tube.jsx'
+import Tube, { Corps } from './Tube.jsx'
 import { coupLegal, quantiteVersee, sommet } from '../logique.js'
 import { couleur } from '../couleurs.js'
 
@@ -7,6 +7,10 @@ const MONTEE = 150
 const RETOUR = 150
 const dureeVersement = (n) => Math.max(150, 65 * n)
 const COL = 0.22 // le goulot, en fraction d'unité, au-dessus du liquide à ras bord
+
+// Le verre est dessiné à la moitié de la place qui lui revient : le plateau
+// respire. La CASE, elle, garde sa taille — c'est elle qui reçoit le doigt.
+const ECHELLE = 0.5
 
 /**
  * Le plateau, et surtout le VERSEMENT.
@@ -24,7 +28,7 @@ const COL = 0.22 // le goulot, en fraction d'unité, au-dessus du liquide à ras
 export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, indiceCoup }) {
   const cadre = useRef(null)
   const tubes = useRef([])
-  const [taille, setTaille] = useState({ largeur: 48, unite: 42, ecart: 10 })
+  const [taille, setTaille] = useState({ cellule: 48, largeur: 24, unite: 21, ecart: 10 })
   const [selection, setSelection] = useState(null)
   const [anim, setAnim] = useState(null)
   const [enVol, setEnVol] = useState(false)
@@ -50,8 +54,9 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
       // sinon il déborde sur la rangée du dessus ou hors du cadre.
       const hauteurDispo = (H - (lignes + 1) * ecart) / lignes
       const parHauteur = hauteurDispo / (hauteur + COL + 0.62) / 0.88
-      const largeur = Math.max(18, Math.min(largeurDispo, parHauteur, 76))
-      setTaille({ largeur, unite: largeur * 0.88, ecart })
+      const cellule = Math.max(18, Math.min(largeurDispo, parHauteur, 76))
+      const largeur = cellule * ECHELLE
+      setTaille({ cellule, largeur, unite: largeur * 0.88, ecart })
     }
     ajuster()
     const ro = new ResizeObserver(ajuster)
@@ -92,8 +97,9 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
   const demarrer = useCallback((de, vers) => {
     const n = quantiteVersee(etat, de, vers, hauteur)
     if (n === 0) return
-    const rDe = tubes.current[de]?.getBoundingClientRect()
-    const rVers = tubes.current[vers]?.getBoundingClientRect()
+    const verre = (i) => tubes.current[i]?.firstElementChild?.getBoundingClientRect()
+    const rDe = verre(de)
+    const rVers = verre(vers)
     if (!rDe || !rVers) { jouer(de, vers); return }
     setSelection(null)
     setEnVol(false)
@@ -188,6 +194,7 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
                   contenu={enFuite ? [] : arrive ? anim.cible : etat[i]}
                   hauteur={hauteur}
                   largeur={taille.largeur}
+                  cellule={taille.cellule}
                   unite={taille.unite}
                   carte={carte}
                   vide={etat[i].length === 0}
@@ -217,13 +224,12 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
               transitionDuration: `${anim.phase === 'monte' ? MONTEE : RETOUR}ms`,
             }}
           >
-            <Tube
+            <Corps
               contenu={vol.contenu}
               hauteur={hauteur}
               largeur={taille.largeur}
               unite={taille.unite}
               carte={carte}
-              vide={vol.contenu.length === 0}
               motifs={motifs}
             />
           </div>

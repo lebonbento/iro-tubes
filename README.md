@@ -30,6 +30,16 @@ le serveur la déroule sur le plateau officiel et n'accepte que si elle mène
 vraiment à la victoire. On ne peut pas s'inscrire au classement sans avoir résolu
 le casse-tête.
 
+**Le verre dessiné et la zone touchée sont deux choses différentes.** Les tubes
+sont dessinés à la moitié de leur case pour que le plateau respire ; le bouton,
+lui, occupe toute la case. Sans cette séparation, un verre de 18 px au niveau 60
+serait invisable au pouce.
+
+**La palette est mesurée, pas choisie à l'œil.** `npm run test-palette` calcule
+l'écart perceptuel (CIEDE2000) entre toutes les paires et refuse en dessous de
+ΔE 22. La roue des teintes boucle : la première et la dernière couleur sont
+voisines, ce qui avait donné « deux rouges » séparés de ΔE 7 seulement.
+
 **La difficulté ne monte pas comme on croit.** Avec des tubes tous pleins au
 départ, ne laisser qu'un seul tube libre rend le plateau insoluble dans 120 cas
 sur 120 : le « mode difficile » des autres jeux suppose des tubes partiellement

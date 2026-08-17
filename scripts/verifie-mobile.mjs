@@ -73,7 +73,8 @@ for (const [nom, appareil] of APPAREILS) {
       debordeH: r.scrollWidth > window.innerWidth + 1,
       debordeV: r.scrollHeight > window.innerHeight + 1,
       nbTubes: tubes.length,
-      plusPetit: Math.min(...tubes.map((t) => t.width)),
+      cible: Math.min(...tubes.map((t) => t.width)),
+      verre: Math.min(...[...document.querySelectorAll('.iro-corps')].map((c) => c.getBoundingClientRect().width)),
       hors: tubes.some((t) => t.top < 0 || t.bottom > window.innerHeight || t.left < 0 || t.right > window.innerWidth),
     }
   })
@@ -81,7 +82,9 @@ for (const [nom, appareil] of APPAREILS) {
   verifie(`${nom} : pas de défilement vertical`, !mesures.debordeV)
   verifie(`${nom} : les 14 tubes sont là`, mesures.nbTubes === 14)
   verifie(`${nom} : aucun tube hors de l’écran`, !mesures.hors)
-  verifie(`${nom} : les tubes restent touchables (${mesures.plusPetit.toFixed(0)} px)`, mesures.plusPetit >= 26)
+  // Le verre est dessiné petit ; c'est la CASE qui doit rester attrapable.
+  verifie(`${nom} : cible tactile ${mesures.cible.toFixed(0)} px (verre ${mesures.verre.toFixed(0)} px)`,
+    mesures.cible >= 26)
 
   await page.screenshot({ path: join(dossier, `${nom.replace(/\W+/g, '-')}.png`) })
 
