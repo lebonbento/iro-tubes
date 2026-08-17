@@ -9,26 +9,30 @@
 //
 // ⚠️ La roue boucle : la première et la dernière sont voisines. C'est ce qui
 // avait donné « deux rouges » — un rouge en tête et un rose en queue, séparés
-// par ΔE 7 seulement, c'est-à-dire à peine perceptible. Les valeurs ci-dessous
-// sont issues d'une recherche qui maximise l'écart perceptuel MINIMAL entre
-// deux teintes quelconques, en imposant en plus 20° d'écart de teinte pour
-// qu'aucune paire n'appartienne visiblement à la même famille.
+// par ΔE 7 seulement, c'est-à-dire à peine perceptible.
+//
+// 🔑 Ces valeurs sont SOURDES par construction, pas par retouche. La direction
+// « Laque » demande des gemmes éteintes ; désaturer la palette vive au rendu
+// faisait tomber l'écart minimal à ΔE 15,9 — deux couleurs devenaient
+// indépartageables, et c'est la RÈGLE du jeu qui cassait, pas seulement le goût.
+// La recherche a donc été refaite directement dans l'espace sourd
+// (saturation 0,34–0,58) : ΔE minimal 22,6, aussi bon que la palette vive.
+// ⚠️ Ne jamais réintroduire une désaturation au rendu : elle se cumulerait.
 //
 // `npm run test-palette` remesure tout et refuse en dessous de ΔE 22.
-// Ne pas retoucher une valeur sans relancer ce contrôle.
 const TEINTES = [
-  ['rouge', '#ed4c12'],
-  ['orange', '#f0a433'],
-  ['jaune', '#e5e520'],
-  ['vert', '#36c936'],
-  ['turquoise', '#75f5db'],
-  ['cyan', '#12c1ed'],
-  ['bleu', '#2479db'],
-  ['indigo', '#2b2be8'],
-  ['lavande', '#b99fef'],
-  ['magenta', '#d012ed'],
-  ['framboise', '#ed126a'],
-  ['dragée', '#e7a6ab'],
+  ['brique', '#a93e2d'],
+  ['ambre', '#d08a4e'],
+  ['vieil or', '#c5bc34'],
+  ['vert', '#4ba136'],
+  ['jade', '#86dfb5'],
+  ['sarcelle', '#479086'],
+  ['givre', '#86c1df'],
+  ['bleu', '#4e79d0'],
+  ['prune', '#562da9'],
+  ['mauve', '#ba6ad7'],
+  ['cassis', '#a92d6f'],
+  ['dragée', '#cd98a3'],
 ]
 
 // Le dégradé de chaque unité se déduit du fond : une seule valeur à régler par
@@ -63,8 +67,10 @@ export const PALETTE = TEINTES.map(([nom, fond]) => {
   return {
     nom,
     fond,
-    clair: versHex(h, Math.min(1, s * 1.02), Math.min(0.93, l + 0.17)),
-    sombre: versHex(h, s, Math.max(0.16, l - 0.19)),
+    // Une gemme : l'éclat du haut est plus PÂLE que saturé, le fond plus sombre
+    // à saturation égale. C'est ce qui donne la pierre plutôt que le bonbon.
+    clair: versHex(h, s * 0.62, Math.min(0.92, l + 0.15)),
+    sombre: versHex(h, s, Math.max(0.1, l - 0.17)),
   }
 })
 

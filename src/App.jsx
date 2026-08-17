@@ -185,23 +185,33 @@ export default function App() {
   return (
     <div className="iro-app">
       <header className="iro-entete">
-        <button type="button" className="iro-lien" onClick={() => setEcran('niveaux')} aria-label="Niveaux">
-          <span className="iro-marque">IRO<i>色</i></span>
-        </button>
-        <div className="iro-titre">
-          <strong>{titre}</strong>
-          <span>
-            {coups} coup{coups > 1 ? 's' : ''}
-            {partie.par ? ` · ${partie.parOptimal ? 'minimum' : 'meilleure connue'} ${partie.par}` : ''}
-          </span>
+        <div className="iro-gauche">
+          <button type="button" className="iro-lien" onClick={() => setEcran('niveaux')} aria-label="Niveaux">
+            <span className="iro-marque">IRO</span>
+          </button>
+          <div className="iro-actions">
+            <button type="button" className="iro-lien" onClick={() => setEcran('classement')} aria-label="Classement">★</button>
+            <button type="button" className="iro-lien" onClick={() => setEcran('reglages')} aria-label="Réglages">⚙</button>
+          </div>
         </div>
-        <div className="iro-actions">
-          <button type="button" className="iro-lien" onClick={() => setEcran('classement')} aria-label="Classement">🏆</button>
-          <button type="button" className="iro-lien" onClick={() => setEcran('reglages')} aria-label="Réglages">⚙</button>
+        {/* Le compteur est présenté comme un RELEVÉ : « 18 / 37 », chiffres
+            tabulaires, unité en petites capitales. C'est ce qui donne sa valeur
+            au minimum calculé par le solveur — sinon ce n'est qu'une note. */}
+        {/* La légende tient sur UNE ligne : « niv. 60 · minimum » repliait
+            l'en-tête sur deux lignes et poussait les icônes au milieu. */}
+        <div className="iro-titre">
+          <strong>{partie.par ? `${coups} / ${partie.par}` : coups}</strong>
+          <span>
+            {partie.source === 'campagne'
+              ? `niv. ${partie.numero} · ${partie.parOptimal ? 'minimum' : 'connu'}`
+              : `partie libre · ${partie.couleurs} couleurs`}
+          </span>
         </div>
       </header>
 
       <main className="iro-scene">
+        {/* La signature de l'estampe, posée une seule fois. */}
+        <span className="iro-sceau" aria-hidden="true">色</span>
         <Plateau
           etat={etat}
           hauteur={partie.hauteur}

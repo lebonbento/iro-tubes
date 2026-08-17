@@ -186,7 +186,7 @@ const laboratoire = {
   themeColor: '#0d1117',
   // Désaturation FRANCHE : à 0,82 les couleurs restaient des bonbons et la
   // promesse « ce sont des réactifs » était démentie par l'écran.
-  teinte: { sat: 0.48, lum: -0.07, ecart: 0.12, satHaut: 0.85 },
+  teinte: { sat: 0.78, lum: -0.05, ecart: 0.12, satHaut: 0.85 },
   texte: `
     <p>De la <b>verrerie scientifique</b> : verre épais, ménisque incurvé à la surface de
     chaque liquide, graduations gravées le long du plateau. Les couleurs sont désaturées —
@@ -259,7 +259,7 @@ const washi = {
   quoi: 'Papier et encre',
   fichier: 'washi.html',
   themeColor: '#ece5d7',
-  teinte: { sat: 0.52, lum: 0.1, ecart: 0.07, satHaut: 0.85 },
+  teinte: { sat: 0.72, lum: 0.14, ecart: 0.07, satHaut: 0.85 },
   texte: `
     <p>La rupture franche : <b>on quitte le noir</b>. Fond de papier japonais chaud, grain
     visible, tubes tracés à l’encre d’un trait qui s’épaissit en bas. Les liquides sont des
@@ -333,7 +333,7 @@ const laque = {
   themeColor: '#08070a',
   // Une gemme est PROFONDE : on assombrit et on retient la saturation, sinon on
   // obtient du bonbon verni, pas de la pierre taillée.
-  teinte: { sat: 0.86, lum: -0.11, ecart: 0.2, satHaut: 0.6 },
+  teinte: { sat: 1.0, lum: -0.02, ecart: 0.18, satHaut: 0.62 },
   texte: `
     <p>Noir de laque profond, et les liquides deviennent des <b>pierres taillées</b> : biseau
     en haut de chaque unité, éclat spéculaire net, ombre portée à l’intérieur du verre. Le
@@ -415,7 +415,7 @@ const melange = {
   // 0,72 laissait encore des couleurs vives : le texte promettait « sourdes »,
   // l'écran montrait du vif. On se pose entre le Laboratoire (0,48) et la
   // Laque (0,86), assez bas pour que ce soit visiblement tenu.
-  teinte: { sat: 0.58, lum: -0.03, ecart: 0.17, satHaut: 0.55 },
+  teinte: { sat: 1.0, lum: 0, ecart: 0.17, satHaut: 0.62 },
   // Un tube déjà rangé, pour montrer la récompense : il s'ourle d'or.
   plateau: [
     [COULEURS[0], COULEURS[3], COULEURS[1], COULEURS[5]],

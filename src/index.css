@@ -1,12 +1,24 @@
 @import 'tailwindcss';
 
+/* IRO 色 — direction « Laque ».
+   Terrain de laque noire, liseré d'or, gemmes sourdes. Trois emprunts assumés :
+   le ménisque et les graduations de la verrerie de laboratoire, la retenue et le
+   sceau de l'estampe. Un seul accent chaud en dehors de l'or : le vermillon du
+   sceau, employé UNE fois. Deux accents qui se disputent, c'est un de trop.
+
+   ⚠️ Aucune police n'est téléchargée : `ui-serif` donne New York sur iPhone et
+   Mac, Georgia ailleurs. Le jeu doit rester jouable hors-ligne. */
+
 :root {
-  --fond: #0b0f14;
-  --fond-haut: #121a24;
-  --encre: #e8edf3;
-  --encre-douce: #93a3b6;
-  --accent: #22d3ee;
-  --trait: rgba(255, 255, 255, 0.1);
+  --fond: #08070a;
+  --fond-haut: #1a1512;
+  --encre: #f0e9dc;
+  --encre-douce: #8b8172;
+  --accent: #c9a227;          /* or mat */
+  --accent-vif: #e0bd4a;
+  --sceau: #c2402f;           /* vermillon, une seule fois */
+  --trait: rgba(201, 162, 39, 0.2);
+  --serif: ui-serif, 'New York', Georgia, 'Times New Roman', serif;
   color-scheme: dark;
 }
 
@@ -14,7 +26,7 @@ html, body, #root { height: 100%; }
 
 body {
   margin: 0;
-  background: radial-gradient(120% 80% at 50% 0%, var(--fond-haut) 0%, var(--fond) 58%) fixed;
+  background: radial-gradient(150% 62% at 50% -10%, var(--fond-haut) 0%, #0b0a0c 52%, var(--fond) 100%) fixed;
   color: var(--encre);
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   overscroll-behavior: none;
@@ -23,70 +35,131 @@ body {
   user-select: none;
 }
 
+/* Un grain très fin sur toute la surface : sans lui, un aplat noir sur écran
+   OLED paraît creux, et les dégradés se strient. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.3;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 0.5px, transparent 0.6px);
+  background-size: 3px 3px;
+}
+
 button { touch-action: manipulation; }
 
 /* ------------------------------------------------------------------ page -- */
 
 .iro-app {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  /* Sur grand écran, laisser la barre de boutons s'étirer sur 1440 px est laid
-     et rend les cibles absurdes. Le jeu est en portrait : il garde sa colonne. */
   width: 100%;
   max-width: 34rem;
   margin: 0 auto;
   padding:
-    calc(env(safe-area-inset-top) + 0.5rem)
-    calc(env(safe-area-inset-right) + 0.5rem)
+    calc(env(safe-area-inset-top) + 0.6rem)
+    calc(env(safe-area-inset-right) + 0.75rem)
     calc(env(safe-area-inset-bottom) + 0.5rem)
-    calc(env(safe-area-inset-left) + 0.5rem);
-  gap: 0.5rem;
+    calc(env(safe-area-inset-left) + 0.75rem);
+  gap: 0.4rem;
 }
 
 .iro-entete {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
   flex: none;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, rgba(201, 162, 39, 0.45), rgba(201, 162, 39, 0.05)) 1;
 }
 
 .iro-marque {
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-family: var(--serif);
   font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.44em;
+  text-indent: 0.44em;
+  color: var(--accent);
 }
-.iro-marque i { font-style: normal; color: var(--accent); margin-left: 0.25rem; }
+.iro-marque i { display: none; }
 
-.iro-titre { text-align: center; line-height: 1.15; }
-.iro-titre strong { display: block; font-size: 0.98rem; font-weight: 650; }
-.iro-titre span { display: block; font-size: 0.76rem; color: var(--encre-douce); font-variant-numeric: tabular-nums; }
+/* Le compteur est un RELEVÉ : chiffres tabulaires, unité en petites capitales.
+   C'est ce qui donne sa valeur au « minimum » calculé par le solveur. */
+.iro-titre { text-align: right; line-height: 1.2; }
+.iro-titre strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.iro-titre span {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  color: var(--encre-douce);
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.15rem;
+}
 
 .iro-lien {
   background: none;
   border: 0;
   color: var(--encre-douce);
-  font-size: 1.1rem;
-  padding: 0.35rem 0.5rem;
-  border-radius: 0.6rem;
+  font-size: 1rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.5rem;
   cursor: pointer;
 }
-.iro-lien:active { background: rgba(255, 255, 255, 0.06); }
+/* Les repères de navigation sont des signes typographiques dorés, pas des
+   émojis en couleur : deux pastilles multicolores suffisaient à faire retomber
+   tout l'écran du côté « jeu pour enfants ». */
+.iro-lien:active { color: var(--accent); }
+.iro-actions .iro-lien { color: var(--accent); opacity: 0.85; font-size: 0.92rem; }
+.iro-gauche { display: flex; align-items: center; gap: 0.15rem; }
+.iro-actions { display: flex; align-items: center; opacity: 0.66; }
+.iro-titre { flex: none; white-space: nowrap; }
 
-.iro-scene { flex: 1; min-height: 0; display: flex; }
+.iro-scene { flex: 1; min-height: 0; display: flex; position: relative; }
 .iro-cadre { flex: 1; min-height: 0; min-width: 0; display: flex; align-items: center; justify-content: center; }
 .iro-grille { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .iro-rangee { display: flex; align-items: flex-end; }
 
+/* Le sceau : la signature de l'estampe, posée une seule fois. */
+.iro-sceau {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 3px;
+  background: var(--sceau);
+  color: #f4ece0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Hiragino Mincho ProN', var(--serif);
+  font-size: 0.95rem;
+  pointer-events: none;
+  opacity: 0.72;
+}
+
 .iro-alerte {
   flex: none;
   text-align: center;
+  font-family: var(--serif);
   font-size: 0.82rem;
-  color: #fcd34d;
-  background: rgba(252, 211, 77, 0.1);
-  border: 1px solid rgba(252, 211, 77, 0.25);
-  border-radius: 0.75rem;
+  color: var(--accent-vif);
+  border-top: 1px solid var(--trait);
+  border-bottom: 1px solid var(--trait);
   padding: 0.5rem 0.75rem;
 }
 
@@ -111,10 +184,19 @@ button { touch-action: manipulation; }
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  box-shadow: inset 0 -6px 14px rgba(0, 0, 0, 0.3);
-  transition: border-color 160ms, box-shadow 160ms;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(201, 162, 39, 0.26);
+  box-shadow: inset -3px 0 8px rgba(255, 255, 255, 0.05), inset 3px 0 7px rgba(0, 0, 0, 0.5);
+  transition: border-color 180ms, box-shadow 180ms;
+}
+
+/* Les graduations gravées le long du verre. */
+.iro-grad { position: absolute; pointer-events: none; }
+.iro-grad i {
+  position: absolute;
+  left: 0;
+  height: 1px;
+  background: rgba(201, 162, 39, 0.22);
 }
 
 .iro-liquide {
@@ -127,15 +209,36 @@ button { touch-action: manipulation; }
   position: relative;
   width: 100%;
   flex: none;
+  box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.45);
   transition: transform 130ms cubic-bezier(0.34, 1.42, 0.64, 1);
 }
-.iro-unite::after {
+/* L'éclat spéculaire : une gemme reçoit la lumière en un point, pas sur toute
+   sa hauteur. C'est ce qui la distingue d'un bloc de gélatine. */
+.iro-unite::after,
+.iro-ajout::after {
   content: '';
   position: absolute;
-  inset: 0 auto 0 8%;
-  width: 14%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.06));
+  left: 15%;
+  top: 14%;
+  width: 17%;
+  height: 40%;
   border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+/* Le ménisque : la surface du liquide se creuse contre le verre. Emprunté à la
+   verrerie ; c'est ce détail qui fait lire du LIQUIDE et non des blocs empilés. */
+.iro-unite.est-surface::before,
+.iro-ajout.est-surface::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: -5px;
+  height: 10px;
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.18);
   pointer-events: none;
 }
 
@@ -143,8 +246,8 @@ button { touch-action: manipulation; }
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 52%;
-  height: 52%;
+  width: 50%;
+  height: 50%;
   transform: translate(-50%, -50%);
 }
 
@@ -152,7 +255,7 @@ button { touch-action: manipulation; }
   position: relative;
   width: 100%;
   flex: none;
-  overflow: hidden;
+  box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.45);
   transition-property: height;
   transition-timing-function: cubic-bezier(0.3, 0.7, 0.4, 1);
 }
@@ -161,21 +264,28 @@ button { touch-action: manipulation; }
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(105deg, rgba(255, 255, 255, 0.16) 0 16%, rgba(255, 255, 255, 0) 34% 100%);
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0.1) 0 14%, rgba(255, 255, 255, 0) 30% 100%);
 }
 
 .iro-tube.est-choisi .iro-verre {
-  border-color: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.35), 0 0 22px rgba(34, 211, 238, 0.28), inset 0 -6px 14px rgba(0, 0, 0, 0.3);
+  border-color: rgba(201, 162, 39, 0.85);
+  box-shadow: 0 0 20px rgba(201, 162, 39, 0.24), inset 3px 0 7px rgba(0, 0, 0, 0.5);
 }
 
+/* Un tube terminé s'ourle d'or : finir une couleur doit SE VOIR. */
+.iro-tube.est-range .iro-verre {
+  border-color: rgba(201, 162, 39, 0.62);
+  box-shadow: 0 0 14px rgba(201, 162, 39, 0.18), inset 3px 0 7px rgba(0, 0, 0, 0.5);
+}
+.iro-tube.est-range .iro-grad { opacity: 0; }
+
 .iro-tube.est-montre .iro-verre {
-  border-color: rgba(252, 211, 77, 0.75);
+  border-color: var(--accent-vif);
   animation: iro-pulse 1.1s ease-in-out infinite;
 }
 @keyframes iro-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(252, 211, 77, 0.35), inset 0 -6px 14px rgba(0, 0, 0, 0.3); }
-  50% { box-shadow: 0 0 0 5px rgba(252, 211, 77, 0), 0 0 20px rgba(252, 211, 77, 0.4), inset 0 -6px 14px rgba(0, 0, 0, 0.3); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 189, 74, 0.3), inset 3px 0 7px rgba(0, 0, 0, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(224, 189, 74, 0), 0 0 22px rgba(224, 189, 74, 0.4), inset 3px 0 7px rgba(0, 0, 0, 0.5); }
 }
 
 /* -------------------------------------------------------------- versement -- */
@@ -187,13 +297,13 @@ button { touch-action: manipulation; }
   transition-property: transform;
   transition-timing-function: cubic-bezier(0.36, 0.05, 0.28, 1);
   will-change: transform;
-  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.55));
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.6));
 }
 
 .iro-jet { position: fixed; left: 0; top: 0; overflow: visible; }
 .iro-trace {
   stroke-dasharray: 1;
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.22));
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
   animation: iro-couler 160ms cubic-bezier(0.3, 0.8, 0.4, 1) forwards;
 }
 @keyframes iro-couler {
@@ -203,28 +313,32 @@ button { touch-action: manipulation; }
 
 /* ----------------------------------------------------------------- barre -- */
 
+/* Du texte et un filet, aucun bouton plein : c'est la retenue empruntée à
+   l'estampe. Un cadre autour de chaque commande alourdirait tout l'écran. */
 .iro-barre {
   flex: none;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 0.6rem 0.6rem;
 }
 .iro-barre button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  padding: 0.5rem 0.25rem;
-  border-radius: 0.85rem;
-  border: 1px solid var(--trait);
-  background: rgba(255, 255, 255, 0.045);
-  color: var(--encre);
-  font-size: 0.72rem;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--encre-douce);
+  font-family: var(--serif);
+  font-size: 0.86rem;
+  letter-spacing: 0.09em;
+  padding: 0.15rem 0.35rem 0.28rem;
   cursor: pointer;
 }
-.iro-barre button span { font-size: 1.05rem; line-height: 1; }
-.iro-barre button:disabled { opacity: 0.32; cursor: default; }
-.iro-barre button:not(:disabled):active { background: rgba(255, 255, 255, 0.12); }
+.iro-barre button span { display: none; }
+.iro-barre button:disabled { opacity: 0.3; cursor: default; }
+.iro-barre button:not(:disabled):active,
+.iro-barre button.est-actif {
+  color: var(--accent);
+  border-color: rgba(201, 162, 39, 0.55);
+}
 
 /* --------------------------------------------------------------- panneau -- */
 
@@ -236,8 +350,8 @@ button { touch-action: manipulation; }
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(5, 8, 12, 0.72);
-  backdrop-filter: blur(6px);
+  background: rgba(4, 3, 5, 0.78);
+  backdrop-filter: blur(7px);
   animation: iro-apparait 180ms ease-out;
 }
 @keyframes iro-apparait { from { opacity: 0; } to { opacity: 1; } }
@@ -247,52 +361,73 @@ button { touch-action: manipulation; }
   max-width: 22rem;
   max-height: 85dvh;
   overflow-y: auto;
-  background: linear-gradient(180deg, #16202c, #0e151d);
+  background: linear-gradient(180deg, #17130f, #0b0a0c);
   border: 1px solid var(--trait);
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  border-radius: 2px;
+  padding: 1.4rem 1.25rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
 }
 .iro-panneau.est-large { max-width: 30rem; }
 
-.iro-panneau h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
-.iro-panneau h3 { font-size: 0.95rem; font-weight: 650; margin: 1.25rem 0 0.25rem; }
+.iro-panneau h2 {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.15rem;
+}
+.iro-panneau h2 + * { margin-top: 0.7rem; }
+.iro-panneau h3 {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 1.4rem 0 0.3rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--trait);
+}
 
-.iro-score { font-size: 1rem; margin-bottom: 1rem; }
-.iro-score em { display: block; font-style: normal; font-size: 0.83rem; color: var(--encre-douce); margin-top: 0.15rem; }
+.iro-score { font-family: var(--serif); font-size: 1.05rem; margin-bottom: 0.9rem; }
+.iro-score em {
+  display: block;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--encre-douce);
+  margin-top: 0.25rem;
+  line-height: 1.45;
+}
 
-.iro-regles { display: flex; flex-direction: column; gap: 0.55rem; margin: 0.5rem 0 0.9rem; font-size: 0.88rem; line-height: 1.45; }
-.iro-regles li { padding-left: 0.9rem; position: relative; color: #cfd8e3; }
+.iro-regles { display: flex; flex-direction: column; gap: 0.6rem; margin: 0.5rem 0 0.9rem; font-size: 0.87rem; line-height: 1.5; }
+.iro-regles li { padding-left: 1rem; position: relative; color: #cdc4b6; }
 .iro-regles li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
-.iro-regles b { color: var(--encre); font-weight: 650; }
+.iro-regles b { color: var(--encre); font-weight: 600; }
 
-.iro-note { font-size: 0.78rem; color: var(--encre-douce); line-height: 1.4; }
+.iro-note { font-size: 0.78rem; color: var(--encre-douce); line-height: 1.5; }
 
-.iro-choix { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.iro-choix { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.1rem; }
 .iro-choix button {
   flex: 1 1 8rem;
-  padding: 0.65rem 0.9rem;
-  border-radius: 0.8rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 2px;
   border: 1px solid var(--trait);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--encre);
+  background: none;
+  color: var(--encre-douce);
+  font-family: var(--serif);
   font-size: 0.86rem;
-  font-weight: 550;
+  letter-spacing: 0.04em;
   cursor: pointer;
 }
 .iro-choix button:disabled { opacity: 0.4; }
 .iro-choix .iro-primaire {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #04252c;
-  font-weight: 700;
+  border-color: rgba(201, 162, 39, 0.7);
+  color: var(--accent);
 }
 
 .iro-grille-niveaux {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(3.1rem, 1fr));
-  gap: 0.45rem;
-  margin-top: 0.5rem;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
 }
 .iro-pastille {
   aspect-ratio: 1;
@@ -300,51 +435,57 @@ button { touch-action: manipulation; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 0.7rem;
-  border: 1px solid var(--trait);
-  background: rgba(255, 255, 255, 0.045);
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: none;
   color: var(--encre);
+  font-family: var(--serif);
   cursor: pointer;
 }
-.iro-pastille b { font-size: 0.9rem; font-weight: 650; }
-.iro-pastille i { font-style: normal; font-size: 0.62rem; color: var(--encre-douce); min-height: 0.8em; }
-.iro-pastille:disabled { opacity: 0.34; cursor: default; }
-.iro-pastille.est-fait { background: rgba(34, 211, 238, 0.12); border-color: rgba(34, 211, 238, 0.35); }
+.iro-pastille b { font-size: 0.92rem; font-weight: 500; }
+.iro-pastille i {
+  font-style: normal;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6rem;
+  color: var(--encre-douce);
+  min-height: 0.85em;
+}
+.iro-pastille:disabled { opacity: 0.3; cursor: default; }
+.iro-pastille.est-fait { border-color: rgba(201, 162, 39, 0.45); }
 .iro-pastille.est-fait i { color: var(--accent); }
-.iro-pastille.est-courant { outline: 2px solid var(--accent); outline-offset: 1px; }
+.iro-pastille.est-courant { border-color: var(--accent); box-shadow: 0 0 12px rgba(201, 162, 39, 0.25); }
 
-.iro-bascule { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.7rem 0; border-bottom: 1px solid var(--trait); cursor: pointer; }
-.iro-bascule input { margin-top: 0.2rem; width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
-.iro-bascule b { display: block; font-size: 0.9rem; font-weight: 600; }
-.iro-bascule em { display: block; font-style: normal; font-size: 0.75rem; color: var(--encre-douce); line-height: 1.35; margin-top: 0.1rem; }
-
-.iro-actions { display: flex; align-items: center; }
+.iro-bascule { display: flex; gap: 0.7rem; align-items: flex-start; padding: 0.75rem 0; border-bottom: 1px solid var(--trait); cursor: pointer; }
+.iro-bascule input { margin-top: 0.2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--accent); }
+.iro-bascule b { display: block; font-family: var(--serif); font-size: 0.92rem; font-weight: 500; }
+.iro-bascule em { display: block; font-style: normal; font-size: 0.75rem; color: var(--encre-douce); line-height: 1.4; margin-top: 0.15rem; }
 
 .iro-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.82rem; font-variant-numeric: tabular-nums; }
-.iro-table th { text-align: right; font-weight: 550; color: var(--encre-douce); font-size: 0.7rem; padding: 0.3rem 0.35rem; border-bottom: 1px solid var(--trait); }
+.iro-table th { text-align: right; font-weight: 400; color: var(--encre-douce); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.3rem 0.35rem; border-bottom: 1px solid var(--trait); }
 .iro-table th:nth-child(2) { text-align: left; }
-.iro-table td { text-align: right; padding: 0.4rem 0.35rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-.iro-table td:nth-child(2) { text-align: left; font-weight: 550; }
+.iro-table td { text-align: right; padding: 0.42rem 0.35rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+.iro-table td:nth-child(2) { text-align: left; font-family: var(--serif); }
 .iro-table td:first-child { color: var(--encre-douce); width: 2rem; }
-.iro-table tr.est-moi td { background: rgba(34, 211, 238, 0.12); color: var(--accent); }
+.iro-table tr.est-moi td { color: var(--accent); border-bottom-color: rgba(201, 162, 39, 0.3); }
 
 .iro-formulaire { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.9rem; }
 .iro-formulaire label { display: flex; flex-direction: column; gap: 0.25rem; }
-.iro-formulaire span { font-size: 0.76rem; color: var(--encre-douce); }
+.iro-formulaire span { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--encre-douce); }
 .iro-formulaire input {
   padding: 0.6rem 0.75rem;
-  border-radius: 0.7rem;
+  border-radius: 2px;
   border: 1px solid var(--trait);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--encre);
+  font-family: var(--serif);
   font-size: 1rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
-.iro-formulaire input:focus { outline: 2px solid var(--accent); outline-offset: 0; }
-.iro-erreur { font-size: 0.8rem; color: #fca5a5; }
+.iro-formulaire input:focus { outline: 1px solid var(--accent); outline-offset: 0; }
+.iro-erreur { font-size: 0.8rem; color: #e6907f; }
 
 @media (prefers-reduced-motion: reduce) {
   .iro-unite, .iro-envol, .iro-ajout { transition-duration: 1ms !important; }
-  .iro-jet, .iro-voile { animation: none; }
+  .iro-trace, .iro-voile { animation: none; }
   .iro-tube.est-montre .iro-verre { animation: none; }
 }

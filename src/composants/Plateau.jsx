@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Tube, { Corps } from './Tube.jsx'
-import { coupLegal, quantiteVersee, sommet } from '../logique.js'
+import { coupLegal, quantiteVersee, sommet, tubeFini } from '../logique.js'
 import { couleur } from '../couleurs.js'
 
 const MONTEE = 150
@@ -198,6 +198,7 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
                   unite={taille.unite}
                   carte={carte}
                   vide={etat[i].length === 0}
+                  range={!enFuite && !arrive && tubeFini(etat[i], hauteur) && etat[i].length > 0}
                   selectionne={selection === i}
                   leve={selection === i ? bloc.taille : 0}
                   motifs={motifs}
