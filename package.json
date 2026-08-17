@@ -22,7 +22,9 @@
     "verifie": "node scripts/verifie-mobile.mjs",
     "test-palette": "node scripts/test-palette.mjs",
     "design": "node scripts/design-systeme.mjs",
-    "design-apercu": "node scripts/apercu-design.mjs"
+    "design-apercu": "node scripts/apercu-design.mjs",
+    "directions": "node scripts/directions.mjs",
+    "directions-apercu": "node scripts/apercu-directions.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
