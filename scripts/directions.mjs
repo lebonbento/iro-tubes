@@ -71,6 +71,7 @@ const HAUTEUR = 4
  * dessin d'un tube, celui d'une unité, et la garniture (en-tête, barre).
  */
 function ecran(d) {
+  const jeu = d.plateau ?? PLATEAU
   const tube = (contenu, i) => {
     const leve = i === SELECTION ? 1 : 0
     const unites = contenu.map((t, k) => d.unite(teinter(t, d.teinte), {
@@ -78,9 +79,10 @@ function ecran(d) {
       dernier: k === contenu.length - 1,
       leve: k >= contenu.length - leve,
     })).join('')
-    return d.tube(unites, { vide: contenu.length === 0, choisi: i === SELECTION })
+    const range = contenu.length === 4 && contenu.every((t) => t === contenu[0])
+    return d.tube(unites, { vide: contenu.length === 0, choisi: i === SELECTION, range })
   }
-  const rangees = [PLATEAU.slice(0, 4), PLATEAU.slice(4)]
+  const rangees = [jeu.slice(0, 4), jeu.slice(4)]
     .map((r, ri) => `<div class="rangee">${r.map((c, k) => tube(c, ri * 4 + k)).join('')}</div>`)
     .join('')
 
@@ -166,7 +168,7 @@ function ecran(d) {
   // Les trois directions tournent sur trois ports du même hôte : on reconstruit
   // les liens depuis l'adresse courante pour que ça marche aussi depuis le
   // téléphone, où l'hôte n'est pas « localhost ».
-  var LIENS = [['Laboratoire', 4401], ['Washi', 4402], ['Laque', 4403]]
+  var LIENS = [['Laboratoire', 4401], ['Washi', 4402], ['Laque', 4403], ['Mélange', 4404]]
   document.getElementById('saut').innerHTML = LIENS.map(function (l) {
     var ici = String(location.port) === String(l[1]) ? ' class="ici"' : ''
     return '<a' + ici + ' href="' + location.protocol + '//' + location.hostname + ':' + l[1] + '/">' + l[0] + '</a>'
@@ -394,7 +396,116 @@ const laque = {
       style="background:linear-gradient(168deg, ${c.haut} 0%, ${c.milieu} 42%, ${c.bas} 100%)"></div>`,
 }
 
-for (const d of [laboratoire, washi, laque]) {
+// ============================================================== 4. MÉLANGE ==
+// Sa demande : « un mix des trois, fond noir ». On garde donc le terrain de la
+// Laque, et on va chercher chez les deux autres ce qu'elles seules avaient :
+//   — du Laboratoire, le MÉNISQUE et les graduations. C'est ce qui fait lire du
+//     liquide au lieu de blocs empilés, et ça donne raison au solveur ;
+//   — du Washi, la RETENUE et le sceau 色. Pas de cadre, pas de bouton plein :
+//     du texte, un filet, et beaucoup de vide.
+// Un seul accent chaud en plus de l'or : le vermillon du sceau, employé une
+// seule fois. Deux accents qui se disputent, c'est un accent de trop.
+const melange = {
+  nom: 'Mélange',
+  quoi: 'Laque, ménisque et sceau',
+  fichier: 'melange.html',
+  themeColor: '#08070a',
+  // Gemmes SOURDES : la profondeur de la Laque, retenue par la désaturation du
+  // Laboratoire. Saturé à fond sur noir, ça redevient du bonbon verni.
+  // 0,72 laissait encore des couleurs vives : le texte promettait « sourdes »,
+  // l'écran montrait du vif. On se pose entre le Laboratoire (0,48) et la
+  // Laque (0,86), assez bas pour que ce soit visiblement tenu.
+  teinte: { sat: 0.58, lum: -0.03, ecart: 0.17, satHaut: 0.55 },
+  // Un tube déjà rangé, pour montrer la récompense : il s'ourle d'or.
+  plateau: [
+    [COULEURS[0], COULEURS[3], COULEURS[1], COULEURS[5]],
+    [COULEURS[2], COULEURS[0], COULEURS[4], COULEURS[3]],
+    [COULEURS[5], COULEURS[4], COULEURS[2], COULEURS[1]],
+    [COULEURS[1], COULEURS[5], COULEURS[3], COULEURS[0]],
+    [COULEURS[4], COULEURS[2], COULEURS[0], COULEURS[2]],
+    [COULEURS[3], COULEURS[3], COULEURS[3], COULEURS[3]],
+    [],
+    [],
+  ],
+  texte: `
+    <p>Le terrain de la <b>Laque</b> : noir profond, liseré d’or, liquides taillés en gemmes —
+    mais <b>sourdes</b>, désaturées comme les réactifs du Laboratoire. Saturé à fond sur du noir,
+    ça redevient du bonbon verni.</p>
+    <p>Du <b>Laboratoire</b>, on garde ce que lui seul avait : le <b>ménisque</b> — la surface du
+    liquide se creuse contre le verre — et les graduations gravées. C’est ce qui fait lire du
+    liquide au lieu de blocs empilés. Le compteur reste un relevé : <b>18 / 37</b>.</p>
+    <p>Du <b>Washi</b>, on garde la <b>retenue</b> : aucun cadre, aucun bouton plein, du texte et
+    un filet. Et le <b>sceau 色</b> en vermillon, posé une seule fois — le seul accent chaud
+    en dehors de l’or.</p>
+    <p>Le tube déjà rangé <b>s’ourle d’or</b> : finir une couleur devient une récompense
+    qu’on voit, pas une case cochée.</p>`,
+  resume: {
+    fond: 'Laque #08070a, halo chaud très doux',
+    accent: 'Or mat #c9a227 + vermillon #c2402f (une fois)',
+    typo: 'ui-serif espacée, chiffres tabulaires',
+    liquide: 'Gemme sourde, ménisque, éclat retenu',
+    risque: 'Trois emprunts : il faut tenir la retenue',
+  },
+  css: `
+  .tel { background: radial-gradient(150% 62% at 50% -10%, #1a1512 0%, #0b0a0c 52%, #08070a 100%); }
+  .tel::after { content:''; position:absolute; inset:0; pointer-events:none; opacity:.3;
+    background-image: radial-gradient(rgba(255,255,255,.05) .5px, transparent .6px);
+    background-size: 3px 3px; }
+  .entete { padding:26px 26px 10px; display:flex; align-items:flex-start; justify-content:space-between; }
+  .marque { font-family: ui-serif, Georgia, serif; font-size:1rem; letter-spacing:.46em;
+    color:#c9a227; text-indent:.46em; }
+  .releve { text-align:right; font-variant-numeric: tabular-nums; }
+  .releve b { display:block; font-family: ui-serif, Georgia, serif; font-weight:500;
+    font-size:1.3rem; color:#f0e9dc; letter-spacing:.02em; }
+  .releve span { font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:#7c7263; }
+  .filet { height:1px; margin:0 26px;
+    background:linear-gradient(90deg, rgba(201,162,39,.45), rgba(201,162,39,.06)); }
+  .tube { position:relative; width:${LARGEUR}px; height:${HAUTEUR * UNITE + 11}px; }
+  .verre { position:absolute; inset:0; border-radius: 5px 5px ${LARGEUR * 0.46}px ${LARGEUR * 0.46}px;
+    border:1px solid rgba(201,162,39,.26); background: rgba(255,255,255,.02);
+    box-shadow: inset -3px 0 8px rgba(255,255,255,.05), inset 3px 0 7px rgba(0,0,0,.5); }
+  .liquide { position:absolute; left:3px; right:3px; top:11px; height:${HAUTEUR * UNITE}px;
+    display:flex; flex-direction:column-reverse; }
+  .u { position:relative; height:${UNITE}px; flex:none; transition:transform .2s;
+    box-shadow: inset 0 -5px 10px rgba(0,0,0,.45); }
+  .u::after { content:''; position:absolute; left:15%; top:14%; width:17%; height:40%;
+    border-radius:999px; background:linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,0)); }
+  .u.bas { border-radius: 0 0 ${LARGEUR * 0.42}px ${LARGEUR * 0.42}px; }
+  /* le ménisque, emprunté au Laboratoire : la surface se creuse contre le verre */
+  .u.haut::before { content:''; position:absolute; left:-1px; right:-1px; top:-5px; height:10px;
+    border-radius:50%; background:inherit; filter:brightness(1.18); }
+  .u.leve { transform: translateY(-26px); }
+  .grad { position:absolute; left:-8px; top:13px; height:${HAUTEUR * UNITE - 6}px; width:5px; }
+  .grad i { position:absolute; left:0; height:1px; background:rgba(201,162,39,.22); }
+  .choisi .verre { border-color:rgba(201,162,39,.85); box-shadow: 0 0 20px rgba(201,162,39,.24),
+    inset 3px 0 7px rgba(0,0,0,.5); }
+  .range .verre { border-color:rgba(201,162,39,.62);
+    box-shadow: 0 0 14px rgba(201,162,39,.16), inset 3px 0 7px rgba(0,0,0,.5); }
+  .range .grad { opacity:0 }
+  .sceau { position:absolute; right:26px; bottom:118px; width:28px; height:28px; border-radius:3px;
+    background:#c2402f; color:#f4ece0; display:flex; align-items:center; justify-content:center;
+    font-family:'Hiragino Mincho ProN', ui-serif, serif; font-size:.95rem; }
+  .barre { display:flex; justify-content:space-between; padding:18px 30px 28px; }
+  .barre button { background:none; border:0; font-family:ui-serif, Georgia, serif; font-size:.84rem;
+    letter-spacing:.1em; color:#8d8474; padding-bottom:4px; border-bottom:1px solid transparent; }
+  .barre button.actif { color:#c9a227; border-color:rgba(201,162,39,.55); }`,
+  entete: `<div class="entete">
+      <span class="marque">IRO</span>
+      <span class="releve"><b>18 / 37</b><span>coups · minimum</span></span>
+    </div><div class="filet"></div>`,
+  barre: `<div class="sceau">色</div><div class="barre">
+      <button>Annuler</button><button>Reprendre</button><button class="actif">Indice</button>
+    </div>`,
+  tube: (unites, { choisi, range }) => `<div class="tube ${choisi ? 'choisi' : ''} ${range ? 'range' : ''}">
+      <div class="grad">${Array.from({ length: HAUTEUR * 2 + 1 }, (_, i) =>
+    `<i style="top:${(i * (HAUTEUR * UNITE - 6)) / (HAUTEUR * 2)}px;width:${i % 2 ? 2.5 : 5}px"></i>`).join('')}</div>
+      <div class="verre"></div><div class="liquide">${unites}</div>
+    </div>`,
+  unite: (c, { premier, dernier, leve }) => `<div class="u ${premier ? 'bas' : ''} ${dernier ? 'haut' : ''} ${leve ? 'leve' : ''}"
+      style="background:linear-gradient(168deg, ${c.haut} 0%, ${c.milieu} 44%, ${c.bas} 100%)"></div>`,
+}
+
+for (const d of [laboratoire, washi, laque, melange]) {
   writeFileSync(join(sortie, d.fichier), ecran(d))
 }
-console.log('  3 directions écrites dans design/directions/')
+console.log('  4 directions écrites dans design/directions/')

@@ -18,6 +18,7 @@ const DIRECTIONS = [
   { nom: 'Laboratoire', fichier: 'laboratoire.html', port: 4401 },
   { nom: 'Washi', fichier: 'washi.html', port: 4402 },
   { nom: 'Laque', fichier: 'laque.html', port: 4403 },
+  { nom: 'Mélange', fichier: 'melange.html', port: 4404 },
 ]
 
 /** L'adresse du Mac sur le réseau local, pour ouvrir depuis le téléphone. */
