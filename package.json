@@ -20,7 +20,9 @@
     "test-bout-en-bout": "node scripts/test-bout-en-bout.mjs",
     "test": "npm run test-logique && npm run test-palette && npm run test-solveur && npm run test-niveaux && npm run test-classement && npm run build && npm run test-bout-en-bout",
     "verifie": "node scripts/verifie-mobile.mjs",
-    "test-palette": "node scripts/test-palette.mjs"
+    "test-palette": "node scripts/test-palette.mjs",
+    "design": "node scripts/design-systeme.mjs",
+    "design-apercu": "node scripts/apercu-design.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

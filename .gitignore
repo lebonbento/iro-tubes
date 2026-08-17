@@ -6,3 +6,4 @@ dev-dist
 scripts/_regarde.mjs
 .env*.local
 captures
+design
