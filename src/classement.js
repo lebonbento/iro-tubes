@@ -91,6 +91,25 @@ export async function viderLaFile() {
   return partis
 }
 
+/**
+ * Envoie un avis. Volontairement sans compte ni file d'attente : c'est un
+ * message ponctuel, pas un résultat de partie qu'on aurait le droit de perdre.
+ */
+export async function envoyerAvis(texte, contexte) {
+  const c = compte()
+  return appeler('/api/avis', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      texte,
+      pseudo: c?.pseudo ?? null,
+      niveau: contexte?.niveau ?? null,
+      coups: contexte?.coups ?? null,
+      appareil: navigator.userAgent.slice(0, 200),
+    }),
+  })
+}
+
 export async function lireClassement() {
   const c = compte()
   const q = c ? `?pseudo=${encodeURIComponent(c.pseudo)}` : ''

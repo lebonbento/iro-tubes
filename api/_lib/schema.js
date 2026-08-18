@@ -20,4 +20,15 @@ export const SCHEMA = [
      primary key (joueur_id, niveau)
    )`,
   `create index if not exists resultats_niveau on resultats (niveau)`,
+  // Les avis des joueuses et joueurs. Aucun compte requis : si on oblige à
+  // s'inscrire pour râler, personne ne râle et on n'apprend rien.
+  `create table if not exists avis (
+     id serial primary key,
+     pseudo text,
+     niveau int,
+     coups int,
+     appareil text,
+     texte text not null check (char_length(texte) between 1 and 1000),
+     cree_le timestamptz not null default now()
+   )`,
 ]

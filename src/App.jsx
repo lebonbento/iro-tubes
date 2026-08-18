@@ -5,7 +5,8 @@ import { verser, gagne, coupsPossibles, tubeFini } from './logique.js'
 import { lire, ecrire } from './stockage.js'
 import { sonVersement, sonTubeFini, sonVictoire } from './sons.js'
 import { repartition } from './couleurs.js'
-import { compte, connecter, envoyer, viderLaFile, lireClassement, oublierCompte, enAttente } from './classement.js'
+import { compte, connecter, envoyer, viderLaFile, lireClassement, oublierCompte, enAttente, envoyerAvis } from './classement.js'
+import Chat from './composants/Chat.jsx'
 
 const NIVEAUX = donnees.niveaux
 const DERNIER = NIVEAUX.length
@@ -212,6 +213,7 @@ export default function App() {
       <main className="iro-scene">
         {/* La signature de l'estampe, posée une seule fois. */}
         <span className="iro-sceau" aria-hidden="true">色</span>
+        <Chat taille={72} humeur={victoire ? 'content' : 'assis'} />
         <Plateau
           etat={etat}
           hauteur={partie.hauteur}
@@ -241,6 +243,7 @@ export default function App() {
 
       {ecran === 'victoire' && (
         <Voile>
+          <div className="iro-chat-fete"><Chat taille={92} humeur="content" /></div>
           <h2>Tubes rangés</h2>
           <p className="iro-score">
             {coups} coup{coups > 1 ? 's' : ''}
@@ -269,6 +272,7 @@ export default function App() {
             {partie.source === 'libre' && (
               <button type="button" className="iro-primaire" onClick={() => partieLibre(partie.couleurs)}>Une autre</button>
             )}
+            <button type="button" onClick={() => setEcran('avis')}>Un truc à dire</button>
             <button type="button" onClick={recommencer}>Refaire celui-ci</button>
             {!monCompte
               ? <button type="button" onClick={() => setEcran('compte')}>Rejoindre le classement</button>
@@ -330,6 +334,13 @@ export default function App() {
         />
       )}
 
+      {ecran === 'avis' && (
+        <PanneauAvis
+          contexte={{ niveau: partie.numero, coups }}
+          fermer={() => setEcran(null)}
+        />
+      )}
+
       {ecran === 'compte' && (
         <PanneauCompte
           monCompte={monCompte}
@@ -365,6 +376,7 @@ export default function App() {
             <button type="button" onClick={() => setEcran('compte')}>
               {monCompte ? `Compte : ${monCompte.pseudo}` : 'Rejoindre le classement'}
             </button>
+            <button type="button" onClick={() => setEcran('avis')}>Dire ce qui me gêne</button>
             <button type="button" onClick={() => setEcran('regles')}>Revoir les règles</button>
             <button type="button" className="iro-primaire" onClick={() => setEcran(null)}>Fermer</button>
           </div>
@@ -486,6 +498,76 @@ function PanneauClassement({ monCompte, fermer, versCompte }) {
         {monCompte && <button type="button" onClick={versCompte}>Mon compte</button>}
         <button type="button" className={monCompte ? 'iro-primaire' : ''} onClick={fermer}>Fermer</button>
       </div>
+    </Voile>
+  )
+}
+
+/**
+ * Le retour de la joueuse.
+ *
+ * Sans compte exprès : obliger à s'inscrire pour pouvoir râler garantit que
+ * personne ne râle. Et ce qui part est écrit noir sur blanc — on ne collecte
+ * rien en douce.
+ */
+function PanneauAvis({ contexte, fermer }) {
+  const [texte, setTexte] = useState('')
+  const [etatEnvoi, setEtat] = useState(null)
+
+  const envoyerLeTout = async (e) => {
+    e.preventDefault()
+    setEtat('envoi')
+    try {
+      await envoyerAvis(texte, contexte)
+      setEtat('ok')
+    } catch (err) {
+      setEtat(err.message)
+    }
+  }
+
+  if (etatEnvoi === 'ok') {
+    return (
+      <Voile>
+        <div className="iro-chat-fete"><Chat taille={88} humeur="content" /></div>
+        <h2>C’est noté</h2>
+        <p className="iro-note">Merci — c’est exactement comme ça que le jeu s’améliore.</p>
+        <div className="iro-choix">
+          <button type="button" className="iro-primaire" onClick={fermer}>Retour au jeu</button>
+        </div>
+      </Voile>
+    )
+  }
+
+  return (
+    <Voile>
+      <h2>Dire ce qui me gêne</h2>
+      <p className="iro-note">
+        Ce qui vous agace, ce qui manque, ce qui est moche : dites-le franchement.
+        Pas besoin de compte.
+      </p>
+      <form onSubmit={envoyerLeTout} className="iro-formulaire">
+        <label>
+          <span>Votre message</span>
+          <textarea
+            value={texte}
+            onChange={(e) => setTexte(e.target.value.slice(0, 1000))}
+            rows={5}
+            placeholder="Les bouteilles sont trop…"
+          />
+        </label>
+        <p className="iro-note">
+          Part avec le message : le <b>niveau en cours</b>
+          {contexte.niveau ? ` (${contexte.niveau})` : ''}, le <b>nombre de coups</b>,
+          votre <b>pseudo</b> si vous en avez un, et le <b>modèle d’appareil</b> —
+          sans ça « ça rame » ou « c’est moche » ne dit pas où ni sur quoi.
+        </p>
+        {etatEnvoi && etatEnvoi !== 'envoi' && <p className="iro-erreur">{etatEnvoi}</p>}
+        <div className="iro-choix">
+          <button type="submit" className="iro-primaire" disabled={etatEnvoi === 'envoi' || texte.trim().length < 2}>
+            {etatEnvoi === 'envoi' ? '…' : 'Envoyer'}
+          </button>
+          <button type="button" onClick={fermer}>Annuler</button>
+        </div>
+      </form>
     </Voile>
   )
 }

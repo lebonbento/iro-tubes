@@ -35,6 +35,7 @@ export async function demarrer(port = 4331) {
     '/api/compte': (await import('../api/compte.js')).default,
     '/api/resultat': (await import('../api/resultat.js')).default,
     '/api/classement': (await import('../api/classement.js')).default,
+    '/api/avis': (await import('../api/avis.js')).default,
   }
 
   const types = {

@@ -26,8 +26,10 @@ function Bloc({ index, teinte, n, unite, largeur, arrondiBas, surface, motifs, d
       className={`iro-unite ${surface ? 'est-surface' : ''}`}
       style={{
         height: n * unite,
-        // 168° et non 180° : l'éclat glisse légèrement de biais.
-        background: `linear-gradient(168deg, ${c.clair} 0%, ${c.fond} ${Math.min(44, 44 / n)}%, ${c.sombre} 100%)`,
+        // APLAT. Un dégradé par bande donnait de la gélatine empilée : dans les
+        // jeux du genre la couleur est plate, et tout le relief vient d'un seul
+        // ombrage cylindrique posé par-dessus la bouteille entière.
+        background: c.fond,
         borderBottomLeftRadius: arrondiBas ? largeur * 0.42 : 0,
         borderBottomRightRadius: arrondiBas ? largeur * 0.42 : 0,
         transform: decalage ? `translateY(${-decalage}px)` : undefined,
@@ -74,17 +76,17 @@ export const COL_FIOLE = 0.6
  */
 export function contourFiole(largeur, unite, hauteur) {
   const W = largeur
-  const goulot = unite * 0.26
-  const epaule = unite * 0.34
+  const goulot = unite * 0.2
+  const epaule = unite * 0.26
   const corps = hauteur * unite
-  const lg = W * 0.5           // largeur du goulot
+  const lg = W * 0.62          // largeur du goulot
   const x1 = (W - lg) / 2
   const x2 = (W + lg) / 2
   const r = lg * 0.28          // arrondi de la lèvre
   const yG = goulot
   const yE = goulot + epaule
   const yB = yE + corps
-  const rb = W * 0.47          // fond arrondi
+  const rb = W * 0.3           // fond arrondi, plus carré
   return [
     `M ${x1 + r} 0`,
     `L ${x2 - r} 0`,
@@ -148,6 +150,9 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
           />
         )}
       </span>
+      {/* L'ombrage cylindrique : bords sombres, cœur clair. C'est lui qui rend
+          la bouteille ronde, et il court sur toute la hauteur d'un seul tenant. */}
+      <span className="iro-ombrage" style={{ clipPath: detourage, WebkitClipPath: detourage }} />
       <span className="iro-reflet" style={{ clipPath: detourage, WebkitClipPath: detourage }} />
       <svg className="iro-fiole iro-contour" viewBox={`0 0 ${largeur} ${hautVerre}`} aria-hidden="true">
         <path d={trace} />
@@ -158,10 +163,10 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
         <span
           className="iro-bouchon"
           style={{
-            width: largeur * 0.6,
-            height: unite * 0.42,
-            borderRadius: `${largeur * 0.1}px ${largeur * 0.1}px ${largeur * 0.05}px ${largeur * 0.05}px`,
-            top: -unite * 0.15,
+            width: largeur * 0.76,
+            height: unite * 0.46,
+            borderRadius: `${largeur * 0.12}px`,
+            top: -unite * 0.2,
           }}
         />
       )}
