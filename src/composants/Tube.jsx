@@ -9,58 +9,130 @@ function clair(hex) {
   return 0.2126 * v(1) + 0.7152 * v(3) + 0.0722 * v(5) > 0.42
 }
 
-function Unite({ index, teinte, taille, largeur, arrondiBas, surface, motifs, decalage }) {
+/**
+ * Un BLOC : toutes les unités contiguës de même couleur, dessinées d'un seul
+ * tenant.
+ *
+ * 🔑 Dessiner unité par unité faisait apparaître quatre bandes dans un flacon
+ * pourtant d'une seule couleur — chacune avait son reflet et son ombre. Les
+ * jeux du genre montrent une colonne continue ; c'est ce qui distingue un
+ * liquide d'une pile de cubes.
+ */
+function Bloc({ index, teinte, n, unite, largeur, arrondiBas, surface, motifs, decalage }) {
   const c = couleur(teinte)
   const encre = clair(c.fond) ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.66)'
   return (
     <div
       className={`iro-unite ${surface ? 'est-surface' : ''}`}
       style={{
-        height: taille,
-        // 168° et non 180° : l'éclat glisse légèrement de biais, comme sur une
-        // pierre taillée. À la verticale, on retombe sur un bloc de gélatine.
-        background: `linear-gradient(168deg, ${c.clair} 0%, ${c.fond} 44%, ${c.sombre} 100%)`,
+        height: n * unite,
+        // 168° et non 180° : l'éclat glisse légèrement de biais.
+        background: `linear-gradient(168deg, ${c.clair} 0%, ${c.fond} ${Math.min(44, 44 / n)}%, ${c.sombre} 100%)`,
         borderBottomLeftRadius: arrondiBas ? largeur * 0.42 : 0,
         borderBottomRightRadius: arrondiBas ? largeur * 0.42 : 0,
         transform: decalage ? `translateY(${-decalage}px)` : undefined,
         zIndex: index,
       }}
     >
-      {motifs && (
-        <svg viewBox="0 0 100 100" className="iro-motif" aria-hidden="true">
+      {motifs && Array.from({ length: n }, (_, i) => (
+        <svg
+          key={i}
+          viewBox="0 0 100 100"
+          className="iro-motif"
+          style={{ top: `${((i + 0.5) / n) * 100}%`, width: unite * 0.5, height: unite * 0.5 }}
+          aria-hidden="true"
+        >
           <path d={motif(teinte)} fill={encre} />
         </svg>
-      )}
+      ))}
     </div>
   )
 }
 
-/** Le tube DESSINÉ. Sa largeur est celle du verre, pas celle de la zone touchée. */
-export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout = null, motifs }) {
+/** Découpe le contenu en blocs contigus de même couleur, du fond vers le haut. */
+function enBlocs(contenu) {
+  const blocs = []
+  for (const c of contenu) {
+    const dernier = blocs[blocs.length - 1]
+    if (dernier && dernier.teinte === c) dernier.n++
+    else blocs.push({ teinte: c, n: 1 })
+  }
+  return blocs
+}
+
+// Le col d'un flacon, en fraction d'unité : le goulot étroit plus l'épaule qui
+// s'évase. Le liquide ne monte QUE jusqu'à l'épaule — au-dessus c'est du verre.
+export const COL_FIOLE = 0.6
+
+/**
+ * Le contour d'un flacon : goulot étroit, épaules évasées, fond arrondi.
+ *
+ * Un seul tracé sert à trois choses — le verre (rempli), le liseré (contour) et
+ * le DÉTOURAGE du liquide. Les trois se superposent donc exactement, et le
+ * liseré, dessiné par-dessus, couvre le bord du liquide : c'est ce qui donne
+ * l'impression que le liquide est vraiment dedans.
+ */
+export function contourFiole(largeur, unite, hauteur) {
+  const W = largeur
+  const goulot = unite * 0.26
+  const epaule = unite * 0.34
+  const corps = hauteur * unite
+  const lg = W * 0.5           // largeur du goulot
+  const x1 = (W - lg) / 2
+  const x2 = (W + lg) / 2
+  const r = lg * 0.28          // arrondi de la lèvre
+  const yG = goulot
+  const yE = goulot + epaule
+  const yB = yE + corps
+  const rb = W * 0.47          // fond arrondi
+  return [
+    `M ${x1 + r} 0`,
+    `L ${x2 - r} 0`,
+    `Q ${x2} 0 ${x2} ${r}`,
+    `L ${x2} ${yG}`,
+    // L'épaule bombe VITE puis s'aplatit : une simple diagonale donnait un
+    // cône de feutre, pas une bouteille.
+    `C ${x2} ${yG + (yE - yG) * 0.7} ${W} ${yG + (yE - yG) * 0.25} ${W} ${yE}`,
+    `L ${W} ${yB - rb}`,
+    `Q ${W} ${yB} ${W - rb} ${yB}`,
+    `L ${rb} ${yB}`,
+    `Q 0 ${yB} 0 ${yB - rb}`,
+    `L 0 ${yE}`,
+    `C 0 ${yG + (yE - yG) * 0.25} ${x1} ${yG + (yE - yG) * 0.7} ${x1} ${yG}`,
+    `L ${x1} ${r}`,
+    `Q ${x1} 0 ${x1 + r} 0`,
+    'Z',
+  ].join(' ')
+}
+
+/** Le flacon DESSINÉ. Sa largeur est celle du verre, pas celle de la zone touchée. */
+export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout = null, motifs, range }) {
   const teinte = (c) => (carte ? carte[c] : c)
   const hautLiquide = hauteur * unite
-  const col = unite * 0.24
-  const hautVerre = hautLiquide + col
+  const hautVerre = hautLiquide + unite * COL_FIOLE
   const saut = unite * 0.62
-  const rayon = `${largeur * 0.14}px ${largeur * 0.14}px ${largeur * 0.46}px ${largeur * 0.46}px`
-  const marge = Math.max(1.5, largeur * 0.07)
+  const trace = contourFiole(largeur, unite, hauteur)
+  const detourage = `path('${trace}')`
   const teinteAjout = ajout ? couleur(teinte(ajout.teinte)) : null
 
   return (
     <span className="iro-corps" style={{ width: largeur, height: hautVerre }}>
-      <span className="iro-verre" style={{ borderRadius: rayon }} />
-      <span className="iro-liquide" style={{ height: hautLiquide, top: col, left: marge, right: marge }}>
-        {contenu.map((c, i) => (
-          <Unite
+      <svg className="iro-fiole" viewBox={`0 0 ${largeur} ${hautVerre}`} aria-hidden="true">
+        <path d={trace} className="iro-verre-fond" />
+      </svg>
+      <span className="iro-liquide" style={{ clipPath: detourage, WebkitClipPath: detourage }}>
+        {enBlocs(contenu).map((b, i, tous) => (
+          <Bloc
             key={i}
             index={i}
-            teinte={teinte(c)}
-            taille={unite}
+            teinte={teinte(b.teinte)}
+            n={b.n}
+            unite={unite}
             largeur={largeur}
             arrondiBas={i === 0}
-            surface={i === contenu.length - 1 && !ajout}
+            surface={i === tous.length - 1 && !ajout}
             motifs={motifs}
-            decalage={i >= contenu.length - leve ? saut : 0}
+            decalage={i === tous.length - 1 && leve > 0 ? saut : 0}
           />
         ))}
         {ajout && (
@@ -76,7 +148,23 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
           />
         )}
       </span>
-      <span className="iro-reflet" style={{ borderRadius: rayon }} />
+      <span className="iro-reflet" style={{ clipPath: detourage, WebkitClipPath: detourage }} />
+      <svg className="iro-fiole iro-contour" viewBox={`0 0 ${largeur} ${hautVerre}`} aria-hidden="true">
+        <path d={trace} />
+      </svg>
+      {/* Le bouchon ne se pose que lorsque la couleur est finie : c'est la
+          récompense qu'on voit, et elle scelle le flacon pour de bon. */}
+      {range && (
+        <span
+          className="iro-bouchon"
+          style={{
+            width: largeur * 0.6,
+            height: unite * 0.42,
+            borderRadius: `${largeur * 0.1}px ${largeur * 0.1}px ${largeur * 0.05}px ${largeur * 0.05}px`,
+            top: -unite * 0.15,
+          }}
+        />
+      )}
     </span>
   )
 }
@@ -96,7 +184,7 @@ export default function Tube({
   contenu, hauteur, largeur, cellule, unite, carte, selectionne, leve = 0, ajout = null,
   motifs, vide, range, onClick, refTube, illumine,
 }) {
-  const hautVerre = hauteur * unite + unite * 0.24
+  const hautVerre = hauteur * unite + unite * COL_FIOLE
   return (
     <button
       type="button"
@@ -115,6 +203,7 @@ export default function Tube({
         leve={leve}
         ajout={ajout}
         motifs={motifs}
+        range={range}
       />
     </button>
   )

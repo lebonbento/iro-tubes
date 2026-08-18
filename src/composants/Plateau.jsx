@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import Tube, { Corps } from './Tube.jsx'
+import Tube, { Corps, COL_FIOLE } from './Tube.jsx'
 import { coupLegal, quantiteVersee, sommet, tubeFini } from '../logique.js'
 import { couleur } from '../couleurs.js'
 
 const MONTEE = 150
 const RETOUR = 150
 const dureeVersement = (n) => Math.max(150, 65 * n)
-const COL = 0.22 // le goulot, en fraction d'unité, au-dessus du liquide à ras bord
+const COL = COL_FIOLE // le col du flacon, au-dessus du liquide à ras bord
 
 // Le verre occupe presque toute sa case. Il avait été réduit de moitié pour
 // aérer le plateau ; la joueuse l'a trouvé trop maigre face aux jeux du genre,
@@ -54,10 +54,10 @@ export default function Plateau({ etat, hauteur, carte, motifs, jouer, gele, ind
       // Une place est réservée au-dessus de chaque rangée pour le bloc soulevé,
       // sinon il déborde sur la rangée du dessus ou hors du cadre.
       const hauteurDispo = (H - (lignes + 1) * ecart) / lignes
-      const parHauteur = hauteurDispo / (hauteur + COL + 0.62) / 0.88
+      const parHauteur = hauteurDispo / (hauteur + COL + 0.62) / 0.8
       const cellule = Math.max(18, Math.min(largeurDispo, parHauteur, 76))
       const largeur = cellule * ECHELLE
-      setTaille({ cellule, largeur, unite: largeur * 0.88, ecart })
+      setTaille({ cellule, largeur, unite: largeur * 0.8, ecart })
     }
     ajuster()
     const ro = new ResizeObserver(ajuster)
