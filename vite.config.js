@@ -32,6 +32,10 @@ export default defineConfig({
         // JSON sur /api/… : le classement casse en silence, et seulement une
         // fois l'app installée. Piège déjà payé sur HEBI.
         navigateFallbackDenylist: [/^\/api\//],
+        // Le nouveau service worker prend la main immédiatement au lieu
+        // d'attendre que tous les onglets soient fermés.
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
   ],
