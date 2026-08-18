@@ -18,20 +18,18 @@ function clair(hex) {
  * jeux du genre montrent une colonne continue ; c'est ce qui distingue un
  * liquide d'une pile de cubes.
  */
-function Bloc({ index, teinte, n, unite, largeur, arrondiBas, surface, motifs, decalage }) {
+function Bloc({ index, teinte, n, unite, largeur, motifs, decalage }) {
   const c = couleur(teinte)
   const encre = clair(c.fond) ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.66)'
   return (
     <div
-      className={`iro-unite ${surface ? 'est-surface' : ''}`}
+      className="iro-unite"
       style={{
         height: n * unite,
         // APLAT. Un dégradé par bande donnait de la gélatine empilée : dans les
         // jeux du genre la couleur est plate, et tout le relief vient d'un seul
         // ombrage cylindrique posé par-dessus la bouteille entière.
         background: c.fond,
-        borderBottomLeftRadius: arrondiBas ? largeur * 0.42 : 0,
-        borderBottomRightRadius: arrondiBas ? largeur * 0.42 : 0,
         transform: decalage ? `translateY(${-decalage}px)` : undefined,
         zIndex: index,
       }}
@@ -61,68 +59,51 @@ function enBlocs(contenu) {
   }
   return blocs
 }
-
-// Le col d'un flacon, en fraction d'unité : le goulot étroit plus l'épaule qui
-// s'évase. Le liquide ne monte QUE jusqu'à l'épaule — au-dessus c'est du verre.
-export const COL_FIOLE = 0.6
+// La hauteur du bouchon, en fraction d'unité : il est posé AU-DESSUS du corps.
+export const COL_FIOLE = 0.5
 
 /**
- * Le contour d'un flacon : goulot étroit, épaules évasées, fond arrondi.
+ * La bouteille.
  *
- * Un seul tracé sert à trois choses — le verre (rempli), le liseré (contour) et
- * le DÉTOURAGE du liquide. Les trois se superposent donc exactement, et le
- * liseré, dessiné par-dessus, couvre le bord du liquide : c'est ce qui donne
- * l'impression que le liquide est vraiment dedans.
+ * 🔑 Copiée de la référence, et ma première version se trompait de forme : ce
+ * n'est PAS une fiole à goulot étroit, c'est un simple RECTANGLE ARRONDI avec
+ * un bouchon posé dessus, comme une gourde. Le grand aplat sombre en haut de
+ * mes premières bouteilles n'était pas un bouchon, c'était du verre vide — d'où
+ * l'allure de feutre.
+ *
+ * Deux autres écarts corrigés : le bouchon est une pièce SÉPARÉE et étroite
+ * (46 % de la largeur), et les bandes sont bien plus larges que hautes
+ * (une unité vaut 0,62 largeur, contre 0,8 avant).
  */
-export function contourFiole(largeur, unite, hauteur) {
-  const W = largeur
-  const goulot = unite * 0.2
-  const epaule = unite * 0.26
-  const corps = hauteur * unite
-  const lg = W * 0.62          // largeur du goulot
-  const x1 = (W - lg) / 2
-  const x2 = (W + lg) / 2
-  const r = lg * 0.28          // arrondi de la lèvre
-  const yG = goulot
-  const yE = goulot + epaule
-  const yB = yE + corps
-  const rb = W * 0.3           // fond arrondi, plus carré
-  return [
-    `M ${x1 + r} 0`,
-    `L ${x2 - r} 0`,
-    `Q ${x2} 0 ${x2} ${r}`,
-    `L ${x2} ${yG}`,
-    // L'épaule bombe VITE puis s'aplatit : une simple diagonale donnait un
-    // cône de feutre, pas une bouteille.
-    `C ${x2} ${yG + (yE - yG) * 0.7} ${W} ${yG + (yE - yG) * 0.25} ${W} ${yE}`,
-    `L ${W} ${yB - rb}`,
-    `Q ${W} ${yB} ${W - rb} ${yB}`,
-    `L ${rb} ${yB}`,
-    `Q 0 ${yB} 0 ${yB - rb}`,
-    `L 0 ${yE}`,
-    `C 0 ${yG + (yE - yG) * 0.25} ${x1} ${yG + (yE - yG) * 0.7} ${x1} ${yG}`,
-    `L ${x1} ${r}`,
-    `Q ${x1} 0 ${x1 + r} 0`,
-    'Z',
-  ].join(' ')
-}
-
-/** Le flacon DESSINÉ. Sa largeur est celle du verre, pas celle de la zone touchée. */
 export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout = null, motifs, range }) {
   const teinte = (c) => (carte ? carte[c] : c)
-  const hautLiquide = hauteur * unite
-  const hautVerre = hautLiquide + unite * COL_FIOLE
-  const saut = unite * 0.62
-  const trace = contourFiole(largeur, unite, hauteur)
-  const detourage = `path('${trace}')`
+  const hautCorps = hauteur * unite
+  const hautBouchon = unite * COL_FIOLE
+  const rHaut = largeur * 0.22
+  const rBas = largeur * 0.17
+  const rayon = `${rHaut}px ${rHaut}px ${rBas}px ${rBas}px`
+  const saut = unite * 0.55
   const teinteAjout = ajout ? couleur(teinte(ajout.teinte)) : null
+  const cadre = { top: hautBouchon, height: hautCorps, borderRadius: rayon }
 
   return (
-    <span className="iro-corps" style={{ width: largeur, height: hautVerre }}>
-      <svg className="iro-fiole" viewBox={`0 0 ${largeur} ${hautVerre}`} aria-hidden="true">
-        <path d={trace} className="iro-verre-fond" />
-      </svg>
-      <span className="iro-liquide" style={{ clipPath: detourage, WebkitClipPath: detourage }}>
+    <span className="iro-corps" style={{ width: largeur, height: hautCorps + hautBouchon }}>
+      {/* le bouchon et sa bague : deux pièces distinctes posées sur le corps */}
+      <span
+        className={`iro-bouchon ${range ? 'est-scelle' : ''}`}
+        style={{
+          width: largeur * 0.46,
+          height: hautBouchon * 0.8,
+          borderRadius: `${largeur * 0.1}px ${largeur * 0.1}px ${largeur * 0.04}px ${largeur * 0.04}px`,
+        }}
+      />
+      <span
+        className="iro-bague"
+        style={{ width: largeur * 0.58, height: hautBouchon * 0.34, top: hautBouchon * 0.68 }}
+      />
+
+      <span className="iro-verre" style={cadre} />
+      <span className="iro-liquide" style={cadre}>
         {enBlocs(contenu).map((b, i, tous) => (
           <Bloc
             key={i}
@@ -131,45 +112,25 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
             n={b.n}
             unite={unite}
             largeur={largeur}
-            arrondiBas={i === 0}
-            surface={i === tous.length - 1 && !ajout}
             motifs={motifs}
             decalage={i === tous.length - 1 && leve > 0 ? saut : 0}
           />
         ))}
         {ajout && (
           <div
-            className="iro-ajout est-surface"
+            className="iro-ajout"
             style={{
               height: ajout.ouvert ? ajout.n * unite : 0,
               transitionDuration: `${ajout.duree ?? 240}ms`,
-              background: `linear-gradient(168deg, ${teinteAjout.clair} 0%, ${teinteAjout.fond} 44%, ${teinteAjout.sombre} 100%)`,
-              borderBottomLeftRadius: contenu.length === 0 ? largeur * 0.42 : 0,
-              borderBottomRightRadius: contenu.length === 0 ? largeur * 0.42 : 0,
+              background: teinteAjout.fond,
             }}
           />
         )}
       </span>
-      {/* L'ombrage cylindrique : bords sombres, cœur clair. C'est lui qui rend
-          la bouteille ronde, et il court sur toute la hauteur d'un seul tenant. */}
-      <span className="iro-ombrage" style={{ clipPath: detourage, WebkitClipPath: detourage }} />
-      <span className="iro-reflet" style={{ clipPath: detourage, WebkitClipPath: detourage }} />
-      <svg className="iro-fiole iro-contour" viewBox={`0 0 ${largeur} ${hautVerre}`} aria-hidden="true">
-        <path d={trace} />
-      </svg>
-      {/* Le bouchon ne se pose que lorsque la couleur est finie : c'est la
-          récompense qu'on voit, et elle scelle le flacon pour de bon. */}
-      {range && (
-        <span
-          className="iro-bouchon"
-          style={{
-            width: largeur * 0.76,
-            height: unite * 0.46,
-            borderRadius: `${largeur * 0.12}px`,
-            top: -unite * 0.2,
-          }}
-        />
-      )}
+      {/* ombrage cylindrique, reflet vertical, puis le contour par-dessus */}
+      <span className="iro-ombrage" style={cadre} />
+      <span className="iro-reflet" style={cadre} />
+      <span className="iro-contour" style={cadre} />
     </span>
   )
 }
