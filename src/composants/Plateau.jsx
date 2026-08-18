@@ -8,9 +8,10 @@ const RETOUR = 150
 const dureeVersement = (n) => Math.max(150, 65 * n)
 const COL = 0.22 // le goulot, en fraction d'unité, au-dessus du liquide à ras bord
 
-// Le verre est dessiné à la moitié de la place qui lui revient : le plateau
-// respire. La CASE, elle, garde sa taille — c'est elle qui reçoit le doigt.
-const ECHELLE = 0.5
+// Le verre occupe presque toute sa case. Il avait été réduit de moitié pour
+// aérer le plateau ; la joueuse l'a trouvé trop maigre face aux jeux du genre,
+// où les tubes sont épais et bien pleins. La CASE reste la zone touchée.
+const ECHELLE = 0.86
 
 /**
  * Le plateau, et surtout le VERSEMENT.

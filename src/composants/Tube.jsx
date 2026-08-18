@@ -46,20 +46,8 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
   const marge = Math.max(1.5, largeur * 0.07)
   const teinteAjout = ajout ? couleur(teinte(ajout.teinte)) : null
 
-  // Les graduations gravées le long du verre : c'est l'emprunt à la verrerie de
-  // laboratoire, et c'est ce qui donne raison au « minimum » affiché en haut.
-  const traits = Array.from({ length: hauteur * 2 + 1 }, (_, i) => (
-    <i
-      key={i}
-      style={{ top: (i * (hautLiquide - 4)) / (hauteur * 2), width: i % 2 ? largeur * 0.07 : largeur * 0.14 }}
-    />
-  ))
-
   return (
     <span className="iro-corps" style={{ width: largeur, height: hautVerre }}>
-      <span className="iro-grad" style={{ left: -largeur * 0.22, top: col, height: hautLiquide - 4 }}>
-        {traits}
-      </span>
       <span className="iro-verre" style={{ borderRadius: rayon }} />
       <span className="iro-liquide" style={{ height: hautLiquide, top: col, left: marge, right: marge }}>
         {contenu.map((c, i) => (

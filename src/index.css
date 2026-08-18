@@ -184,19 +184,10 @@ button { touch-action: manipulation; }
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(201, 162, 39, 0.26);
-  box-shadow: inset -3px 0 8px rgba(255, 255, 255, 0.05), inset 3px 0 7px rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1.5px solid rgba(201, 162, 39, 0.34);
+  box-shadow: inset -4px 0 10px rgba(255, 255, 255, 0.09), inset 4px 0 9px rgba(0, 0, 0, 0.45);
   transition: border-color 180ms, box-shadow 180ms;
-}
-
-/* Les graduations gravées le long du verre. */
-.iro-grad { position: absolute; pointer-events: none; }
-.iro-grad i {
-  position: absolute;
-  left: 0;
-  height: 1px;
-  background: rgba(201, 162, 39, 0.22);
 }
 
 .iro-liquide {
@@ -223,7 +214,7 @@ button { touch-action: manipulation; }
   width: 17%;
   height: 40%;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
   pointer-events: none;
 }
 /* Le ménisque : la surface du liquide se creuse contre le verre. Emprunté à la
@@ -264,7 +255,7 @@ button { touch-action: manipulation; }
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(105deg, rgba(255, 255, 255, 0.1) 0 14%, rgba(255, 255, 255, 0) 30% 100%);
+  background: linear-gradient(102deg, rgba(255, 255, 255, 0.22) 0 13%, rgba(255, 255, 255, 0) 28% 100%);
 }
 
 .iro-tube.est-choisi .iro-verre {
@@ -277,7 +268,6 @@ button { touch-action: manipulation; }
   border-color: rgba(201, 162, 39, 0.62);
   box-shadow: 0 0 14px rgba(201, 162, 39, 0.18), inset 3px 0 7px rgba(0, 0, 0, 0.5);
 }
-.iro-tube.est-range .iro-grad { opacity: 0; }
 
 .iro-tube.est-montre .iro-verre {
   border-color: var(--accent-vif);
