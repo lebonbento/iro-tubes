@@ -18,9 +18,10 @@ function clair(hex) {
  * jeux du genre montrent une colonne continue ; c'est ce qui distingue un
  * liquide d'une pile de cubes.
  */
-function Bloc({ index, teinte, n, unite, largeur, motifs, decalage }) {
+function Bloc({ index, teinte, n, unite, largeur, motifs, decalage, surface }) {
   const c = couleur(teinte)
   const encre = clair(c.fond) ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.66)'
+  const ellipse = largeur * 0.42
   return (
     <div
       className="iro-unite"
@@ -34,6 +35,19 @@ function Bloc({ index, teinte, n, unite, largeur, motifs, decalage }) {
         zIndex: index,
       }}
     >
+      {/* 🔑 Le dessus du liquide est une ELLIPSE, pas un trait droit : on
+          regarde un cylindre légèrement de dessus. C'est ce détail, et lui
+          seul, qui fait passer le dessin de la 2D à la 3D. */}
+      {surface && (
+        <span
+          className="iro-menisque"
+          style={{
+            height: ellipse,
+            top: -ellipse / 2,
+            background: `radial-gradient(64% 140% at 52% 100%, ${c.clair} 0%, ${c.fond} 66%, ${c.sombre} 100%)`,
+          }}
+        />
+      )}
       {motifs && Array.from({ length: n }, (_, i) => (
         <svg
           key={i}
@@ -60,7 +74,7 @@ function enBlocs(contenu) {
   return blocs
 }
 // La hauteur du bouchon, en fraction d'unité : il est posé AU-DESSUS du corps.
-export const COL_FIOLE = 0.5
+export const COL_FIOLE = 0.88
 
 /**
  * La bouteille.
@@ -77,8 +91,11 @@ export const COL_FIOLE = 0.5
  */
 export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout = null, motifs, range }) {
   const teinte = (c) => (carte ? carte[c] : c)
-  const hautCorps = hauteur * unite
-  const hautBouchon = unite * COL_FIOLE
+  const ellipse = largeur * 0.42
+  // Le corps garde une réserve en haut : sans elle, le ménisque d'une bouteille
+  // pleine serait coupé net par le bord du verre.
+  const hautCorps = hauteur * unite + ellipse / 2
+  const hautBouchon = unite * 0.62
   const rHaut = largeur * 0.22
   const rBas = largeur * 0.17
   const rayon = `${rHaut}px ${rHaut}px ${rBas}px ${rBas}px`
@@ -88,18 +105,17 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
 
   return (
     <span className="iro-corps" style={{ width: largeur, height: hautCorps + hautBouchon }}>
-      {/* le bouchon et sa bague : deux pièces distinctes posées sur le corps */}
+      {/* Le bouchon est un TORE : un anneau bombé dont on voit le trou au
+          milieu, pas un rectangle. Il est large — 78 % de la bouteille. */}
       <span
         className={`iro-bouchon ${range ? 'est-scelle' : ''}`}
-        style={{
-          width: largeur * 0.46,
-          height: hautBouchon * 0.8,
-          borderRadius: `${largeur * 0.1}px ${largeur * 0.1}px ${largeur * 0.04}px ${largeur * 0.04}px`,
-        }}
-      />
+        style={{ width: largeur * 0.78, height: hautBouchon }}
+      >
+        <span className="iro-trou" />
+      </span>
       <span
         className="iro-bague"
-        style={{ width: largeur * 0.58, height: hautBouchon * 0.34, top: hautBouchon * 0.68 }}
+        style={{ width: largeur * 0.64, height: hautBouchon * 0.3, top: hautBouchon * 0.78 }}
       />
 
       <span className="iro-verre" style={cadre} />
@@ -113,6 +129,7 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
             unite={unite}
             largeur={largeur}
             motifs={motifs}
+            surface={i === tous.length - 1 && !ajout}
             decalage={i === tous.length - 1 && leve > 0 ? saut : 0}
           />
         ))}
