@@ -74,7 +74,7 @@ function enBlocs(contenu) {
   return blocs
 }
 // La hauteur du bouchon, en fraction d'unité : il est posé AU-DESSUS du corps.
-export const COL_FIOLE = 0.88
+export const COL_FIOLE = 1.12
 
 /**
  * La bouteille.
@@ -95,16 +95,18 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
   // Le corps garde une réserve en haut : sans elle, le ménisque d'une bouteille
   // pleine serait coupé net par le bord du verre.
   const hautCorps = hauteur * unite + ellipse / 2
-  const hautBouchon = unite * 0.62
+  // Le tore est plus HAUT que large-plat : 0,62 de sa largeur. Aplati, il se
+  // lisait comme un béret posé de travers au lieu d'un anneau.
+  const hautBouchon = largeur * 0.78 * 0.62
   const rHaut = largeur * 0.22
   const rBas = largeur * 0.17
   const rayon = `${rHaut}px ${rHaut}px ${rBas}px ${rBas}px`
   const saut = unite * 0.55
   const teinteAjout = ajout ? couleur(teinte(ajout.teinte)) : null
-  const cadre = { top: hautBouchon, height: hautCorps, borderRadius: rayon }
+  const cadre = { top: hautBouchon * 0.9, height: hautCorps, borderRadius: rayon }
 
   return (
-    <span className="iro-corps" style={{ width: largeur, height: hautCorps + hautBouchon }}>
+    <span className="iro-corps" style={{ width: largeur, height: hautCorps + hautBouchon * 0.9 }}>
       {/* Le bouchon est un TORE : un anneau bombé dont on voit le trou au
           milieu, pas un rectangle. Il est large — 78 % de la bouteille. */}
       <span
@@ -113,10 +115,6 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
       >
         <span className="iro-trou" />
       </span>
-      <span
-        className="iro-bague"
-        style={{ width: largeur * 0.64, height: hautBouchon * 0.3, top: hautBouchon * 0.78 }}
-      />
 
       <span className="iro-verre" style={cadre} />
       <span className="iro-liquide" style={cadre}>

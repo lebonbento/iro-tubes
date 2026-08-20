@@ -267,31 +267,40 @@ button { touch-action: manipulation; }
   z-index: 6;
   border-radius: 50%;
   border: 1px solid rgba(150, 220, 240, 0.3);
+  /* La lumière fait le TOUR du boudin : claire sur le dessus, sombre au creux,
+     puis de nouveau claire sous le ventre de l'anneau. Sans ce retour de
+     lumière en bas, on lit un dôme — donc un chapeau — et pas un tore. */
   background:
     linear-gradient(180deg,
-      rgba(255, 255, 255, 0.34) 0%,
-      rgba(140, 200, 225, 0.16) 24%,
-      rgba(16, 22, 34, 0.92) 58%,
-      rgba(80, 108, 130, 0.45) 86%,
-      rgba(10, 14, 22, 0.92) 100%),
-    rgba(22, 28, 42, 0.94);
+      rgba(160, 200, 220, 0.3) 0%,
+      rgba(90, 130, 155, 0.2) 22%,
+      rgba(16, 22, 34, 0.78) 50%,
+      rgba(34, 46, 64, 0.8) 70%,
+      rgba(140, 180, 205, 0.4) 90%,
+      rgba(70, 95, 115, 0.5) 100%),
+    rgba(18, 24, 38, 0.72);
   box-shadow:
-    inset 0 2px 4px rgba(255, 255, 255, 0.3),
-    inset 0 -3px 7px rgba(0, 0, 0, 0.6),
-    0 2px 5px rgba(0, 0, 0, 0.55);
+    inset 0 1px 1px rgba(255, 255, 255, 0.28),
+    inset 0 -2px 5px rgba(255, 255, 255, 0.16),
+    0 3px 6px rgba(0, 0, 0, 0.55);
   pointer-events: none;
 }
 /* le trou de l'anneau */
+/* Le trou : une ellipse TRÈS aplatie, haut placée, cerclée d'un filet clair.
+   Trop grand et trop rond, il transformait l'anneau en couvre-chef. */
 .iro-trou {
   position: absolute;
   left: 50%;
-  top: 30%;
+  top: 22%;
   translate: -50% 0;
-  width: 46%;
-  height: 42%;
+  width: 60%;
+  height: 28%;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 26%, rgba(4, 7, 12, 0.96), rgba(14, 20, 32, 0.92));
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(190, 230, 245, 0.28);
+  background: radial-gradient(60% 130% at 50% 10%, rgba(3, 5, 9, 0.97), rgba(16, 22, 34, 0.93));
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(190, 230, 245, 0.32),
+    0 2px 2px rgba(180, 220, 240, 0.18);
 }
 .iro-bague {
   position: absolute;
@@ -299,8 +308,7 @@ button { touch-action: manipulation; }
   translate: -50% 0;
   z-index: 5;
   border-radius: 2px;
-  background: linear-gradient(96deg, #34313b 0%, #6d6778 34%, #46424f 70%, #2a2831 100%);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(96deg, rgba(18, 24, 36, 0.95) 0%, rgba(52, 66, 84, 0.9) 38%, rgba(22, 29, 42, 0.95) 100%);
   pointer-events: none;
   transition: box-shadow 200ms;
 }
