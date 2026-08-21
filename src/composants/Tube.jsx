@@ -74,7 +74,10 @@ function enBlocs(contenu) {
   return blocs
 }
 // La hauteur du bouchon, en fraction d'unité : il est posé AU-DESSUS du corps.
-export const COL_FIOLE = 0.45
+// Ce qui surmonte le liquide, en unités : la place du bouchon, le dôme du
+// liquide, et surtout une RÉSERVE DE VIDE. Sans elle, une bouteille pleine est
+// pleine à ras bord et l'écran étouffe.
+export const COL_FIOLE = 1.48
 
 /**
  * La bouteille.
@@ -92,9 +95,11 @@ export const COL_FIOLE = 0.45
 export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout = null, motifs, range }) {
   const teinte = (c) => (carte ? carte[c] : c)
   const ellipse = largeur * 0.42
-  // Le corps garde une réserve en haut : sans elle, le ménisque d'une bouteille
-  // pleine serait coupé net par le bord du verre.
-  const hautCorps = hauteur * unite + ellipse / 2
+  // Le corps garde une réserve en haut : de quoi loger le dôme du liquide sans
+  // qu'il soit coupé net par le bord du verre, PLUS un demi-cran de vide. Une
+  // bouteille remplie à ras bord donne un écran étouffant — c'est ce vide qui
+  // fait respirer le plateau maintenant que le bouchon a disparu.
+  const hautCorps = hauteur * unite + ellipse / 2 + unite * 0.55
   const hautBouchon = unite * 0.52
   const rHaut = largeur * 0.22
   const rBas = largeur * 0.17
