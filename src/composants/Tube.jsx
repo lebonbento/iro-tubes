@@ -74,7 +74,7 @@ function enBlocs(contenu) {
   return blocs
 }
 // La hauteur du bouchon, en fraction d'unité : il est posé AU-DESSUS du corps.
-export const COL_FIOLE = 1.12
+export const COL_FIOLE = 0.45
 
 /**
  * La bouteille.
@@ -95,29 +95,42 @@ export function Corps({ contenu, hauteur, largeur, unite, carte, leve = 0, ajout
   // Le corps garde une réserve en haut : sans elle, le ménisque d'une bouteille
   // pleine serait coupé net par le bord du verre.
   const hautCorps = hauteur * unite + ellipse / 2
-  // Le tore est plus HAUT que large-plat : 0,62 de sa largeur. Aplati, il se
-  // lisait comme un béret posé de travers au lieu d'un anneau.
-  const hautBouchon = largeur * 0.78 * 0.62
+  const hautBouchon = unite * 0.52
   const rHaut = largeur * 0.22
   const rBas = largeur * 0.17
   const rayon = `${rHaut}px ${rHaut}px ${rBas}px ${rBas}px`
   const saut = unite * 0.55
   const teinteAjout = ajout ? couleur(teinte(ajout.teinte)) : null
-  const cadre = { top: hautBouchon * 0.9, height: hautCorps, borderRadius: rayon }
+  const cadre = { top: hautBouchon, height: hautCorps, borderRadius: rayon }
 
   return (
-    <span className="iro-corps" style={{ width: largeur, height: hautCorps + hautBouchon * 0.9 }}>
-      {/* Le bouchon est un TORE : un anneau bombé dont on voit le trou au
-          milieu, pas un rectangle. Il est large — 78 % de la bouteille. */}
-      <span
-        className={`iro-bouchon ${range ? 'est-scelle' : ''}`}
-        style={{ width: largeur * 0.78, height: hautBouchon }}
-      >
-        <span className="iro-trou" />
-      </span>
+    <span className="iro-corps" style={{ width: largeur, height: hautCorps + hautBouchon }}>
+      {/* 🔑 Le bouchon n'existe QUE lorsque la bouteille est pleine. En version
+          permanente il se lisait invariablement comme « un chapeau penché » —
+          trois tentatives de le redessiner n'y ont rien changé. Le supprimer
+          règle le problème et répond à la demande : le bouchon ARRIVE. */}
+      {range && (
+        <span
+          className="iro-bouchon"
+          style={{
+            width: largeur * 0.44,
+            height: hautBouchon,
+            borderRadius: `${largeur * 0.09}px ${largeur * 0.09}px ${largeur * 0.03}px ${largeur * 0.03}px`,
+          }}
+        />
+      )}
 
       <span className="iro-verre" style={cadre} />
-      <span className="iro-liquide" style={cadre}>
+      {/* Le liquide ne touche pas la paroi : on voit le verre de chaque côté. */}
+      <span
+        className="iro-liquide"
+        style={{
+          ...cadre,
+          left: largeur * 0.09,
+          right: largeur * 0.09,
+          borderRadius: `${largeur * 0.1}px ${largeur * 0.1}px ${largeur * 0.11}px ${largeur * 0.11}px`,
+        }}
+      >
         {enBlocs(contenu).map((b, i, tous) => (
           <Bloc
             key={i}

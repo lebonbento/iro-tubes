@@ -11,7 +11,10 @@
 
 import { PALETTE, repartition } from '../src/couleurs.js'
 
-const SEUIL = 22
+// 21 et non 22 : on a échangé 1,5 point d'écart contre des couleurs nettement
+// plus franches, à la demande de la joueuse. 21 reste très au-dessus du seuil
+// du « nettement différent au premier coup d'œil » (10).
+const SEUIL = 21
 
 const versLab = (hex) => {
   const canal = (i) => {

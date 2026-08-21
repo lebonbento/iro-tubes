@@ -11,7 +11,13 @@
 // avait donné « deux rouges » — un rouge en tête et un rose en queue, séparés
 // par ΔE 7 seulement, c'est-à-dire à peine perceptible.
 //
-// 🔑 CES COULEURS SONT VIVES, ET C'EST UNE DEMANDE DE LA JOUEUSE.
+// 🔑 CES COULEURS SONT FRANCHES, ET C'EST UNE DEMANDE DE LA JOUEUSE.
+// Saturation moyenne 0,99 et clarté 0,46 : chaque teinte a été foncée et
+// saturée au maximum, une par une, tant que l'écart perceptuel global tenait.
+// ⚠️ `lavande` et `dragée` restent claires et c'est IRRÉDUCTIBLE : douze
+// couleurs séparées de ΔE 21 exigent des écarts de CLARTÉ, pas seulement de
+// teinte. Les foncer comme les autres écrase framboise et dragée l'une sur
+// l'autre (mesuré : ΔE 8,5, indépartageables).
 // La version sourde (gemmes éteintes de la direction « Laque ») était plus
 // chic mais Miki, qui joue au genre, l'a rejetée : les jeux de référence sont
 // « a riot of colors ». La couleur n'est pas un habillage dans ce jeu, c'est
@@ -21,18 +27,18 @@
 //
 // `npm run test-palette` remesure tout et refuse en dessous de ΔE 22.
 const TEINTES = [
-  ['rouge', '#ed4c12'],
-  ['orange', '#f0a433'],
-  ['jaune', '#e5e520'],
-  ['vert', '#36c936'],
-  ['turquoise', '#75f5db'],
-  ['cyan', '#12c1ed'],
-  ['bleu', '#2479db'],
-  ['indigo', '#2b2be8'],
-  ['lavande', '#b99fef'],
-  ['magenta', '#d012ed'],
-  ['framboise', '#ed126a'],
-  ['dragée', '#e7a6ab'],
+  ['rouge', '#cc3600'],
+  ['orange', '#cc7a00'],
+  ['jaune', '#cccc00'],
+  ['vert', '#00cc00'],
+  ['turquoise', '#00eabb'],
+  ['cyan', '#00a3cc'],
+  ['bleu', '#005fcc'],
+  ['indigo', '#0000cc'],
+  ['lavande', '#ab82ff'],
+  ['magenta', '#b500d1'],
+  ['framboise', '#cc0052'],
+  ['dragée', '#f9717b'],
 ]
 
 // Le dégradé de chaque unité se déduit du fond : une seule valeur à régler par
